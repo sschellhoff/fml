@@ -1,0 +1,21 @@
+let a = 1337; // can change a
+a = 42;
+println(a);
+
+const b = 42; // can not change b
+// b = 12; would result in an error
+
+let c = [1, 2, 3]; // can change c and it's contents
+c = "something else";
+
+const d = [1, 2, 3]; // can not change d, but it's contents
+d[0] = 42;
+println(d);
+
+let e = {}; // can change e and it's contents
+e.something = "else";
+
+const f = {}; // can not change f, but it's contents
+f.doIt = fun() {
+    return 42;
+};

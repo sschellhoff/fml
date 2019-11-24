@@ -1,0 +1,5 @@
+let èéẞßäöü = 1337;
+println(èéẞßäöü);
+
+let someString = "ẞßéáä";
+println(someString);
