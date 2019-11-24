@@ -1,0 +1,39 @@
+const number = 600851475143;
+let factors = [];
+let reminder = number;
+
+const sqrt = fun(n) {
+    if n < 2 {
+        return n;
+    }
+    let smallCandidate = sqrt(n/4) * 2;
+    let largeCandidate = smallCandidate + 1;
+    if largeCandidate * largeCandidate > n {
+        return smallCandidate;
+    } else {
+        return largeCandidate;
+    }
+};
+
+loop reminder % 2 == 0 {
+    reminder = reminder / 2;
+    factors = push(factors, 2);
+}
+
+const max = sqrt(reminder);
+let n = 3;
+
+loop n < max {
+    loop reminder % n == 0 {
+        reminder = reminder / n;
+        factors = push(factors, n);
+    }
+    n = n + 2;
+}
+if reminder > 2 {
+    factors = push(factors, reminder);
+}
+
+println("factors: ", factors);
+
+println("the biggest factor of: ", number, ", is: ", factors[len(factors)-1]);

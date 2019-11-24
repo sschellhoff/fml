@@ -1,0 +1,60 @@
+let a = 1337;
+let b = true;
+let c = [1, 2, 3];
+let d = {"a": 41, true: "something", 12: 314};
+let add = fun(a, b) { return a + b; };
+let sub = fun(a, b) { return a - b; };
+
+let getIncrementor = fun() {
+    let value = 0;
+    let inc = fun() {
+        value = value + 1;
+        return value;
+    };
+
+    return inc;
+};
+
+const main = fun() {
+    let num = 42;
+    if num > 12 {
+        println("{}", num);
+    } else {
+        println("nooo");
+    }
+    println("ja");
+
+    if num == true {
+        println("num == true");
+    } else {
+        println("num != true");
+    }
+    println("ja");
+
+    loop true {
+        if num > 100 {
+            break;
+        }
+        num = num + 10;
+        println(num);
+    }
+
+    loop i in [0..10] {
+        println(i);
+    }
+
+    if add(13, 37) < num {
+        println(sub(42, num));
+    }
+
+    println("d['a'] = {1}, c[0] = {0}", c[0], d["a"]);
+
+    let inc = getIncrementor();
+    let value = inc();
+    loop value < 10 {
+        println(value);
+        value = inc();
+    }
+};
+
+main();

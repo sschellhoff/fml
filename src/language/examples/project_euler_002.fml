@@ -1,0 +1,14 @@
+let lastTwo = [0, 1];
+let sum = 0;
+loop forever {
+    let last = lastTwo[1];
+    let current = lastTwo[0] + last;
+    if current > 4000000 {
+        break;
+    }
+    if current % 2 == 0 {
+        sum = sum + current;
+    }
+    lastTwo = [last, current];
+}
+println(sum);

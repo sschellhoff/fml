@@ -1,0 +1,81 @@
+const word = "secret";
+
+const count = fun(word, character) {
+    const range = 0..len(word);
+    let count = 0;
+    loop i in range {
+        let c = substring(word, i, i+1);
+        if c == character {
+            count = count + 1;
+        }
+    }
+    return count;
+};
+
+const show = fun(corrects, word) {
+    const range = 0..len(word);
+    loop i in range {
+        let found = false;
+        let char = substring(word, i, i+1);
+        loop c in corrects {
+            if char == c {
+                print(c);
+                found = true;
+                break;
+            }
+        }
+        if !found {
+            print("*");
+        }
+    }
+    println("");
+};
+
+const won = fun(corrects, word) {
+    const range = 0..len(word);
+    loop l in range {
+        let k = substring(word, l, l+1);
+        let found = false;
+        loop c in corrects {
+            if k == c {
+                found = true;
+                break;
+            }
+        }
+        if !found {
+            return false;
+        }
+    }
+    return true;
+};
+
+let getChar = fun() {
+    let c = readline("Enter a character: ");
+    return substring(c, 0, 1);
+};
+
+let numberOfGuesses = 0;
+let corrects = [];
+
+loop forever {
+    let c = getChar();
+    if count(word, c) == 0 {
+        println("not correct");
+        numberOfGuesses = numberOfGuesses + 1;
+    } else {
+        println("correct");
+        corrects = push(corrects, c);
+    }
+    show(corrects, word);
+    if won(corrects, word) {
+        println("You won");
+        break;
+    }
+
+    if numberOfGuesses >= 5 {
+        println("Lost");
+        println("The word was: ", word);
+        break;
+    }
+}
+
