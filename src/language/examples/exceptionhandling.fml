@@ -1,0 +1,18 @@
+try {
+    // use an undefined identifier to get an error
+    i;
+} catch exception {
+    // catch the error and print the message:
+    println(exception);
+}
+
+try {
+    // throw an own error
+    error("Something is wrong");
+} catch exception {
+    // catch and print it
+    println(exception);
+}
+
+// just crash the program with an unhandled error:
+error("don't catch me!");
