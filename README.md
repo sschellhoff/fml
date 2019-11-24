@@ -9,5 +9,6 @@ You can start the program without any arguments to get a really simple repl. Or 
 
 ## Comming soon
 * module system
+* plugins (for own code wrappers and stuff)
 * more tests
 * lots of refactoring
