@@ -11,18 +11,7 @@ const devides3Or5 = fun(n) {
 };
 
 let sum = 0;
-let sum2 = 0;
-let sum3 = 0;
 loop num in 1..1000 {
-    if devides3(num) || devides5(num) {
-        sum = sum + num;
-    }
-    if devides3Or5(num) {
-        sum2 = sum2 + num;
-    }
-    sum3 = sum3 + (devides3Or5(num) ? num : 0);
-    // if error in expression, it doesn't get returned
+    sum += (devides3Or5(num) ? num : 0);
 }
 println(sum);
-println(sum2);
-println(sum3);
