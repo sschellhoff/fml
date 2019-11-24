@@ -1,0 +1,32 @@
+// integer
+let a = 0; 
+
+// float
+let b = 13.37;
+
+// boolean
+let c = true;
+
+// array
+let d = 3..25;
+let e = [3, 4, 5, 2, 1, 6];
+
+// hash
+let f = {13: 37, "hello": "there"};
+
+// null, yeah i know ;)
+let g = null;
+
+// function
+let add = fun(a, b) {
+    return a + b;
+};
+
+println(a);
+println(b);
+println(c);
+println(d);
+println(e);
+println(f);
+println(g);
+println(add(13, 37));
