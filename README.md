@@ -1,0 +1,1 @@
+Friendly Multi-paradigm Language
