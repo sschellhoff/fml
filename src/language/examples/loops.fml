@@ -1,0 +1,49 @@
+// loop over range
+loop i in 0..10 {
+    println(i);
+}
+println("");
+
+// classic while
+let a = 0;
+loop a < 10 {
+    println(a);
+    a += 1;
+}
+println("");
+
+// while true
+let b = 0;
+loop forever {
+    if b >= 10 {
+        break;
+    }
+    println(b);
+    b += 1;
+}
+println("");
+
+// loop over array with indices
+let array = [0, 1, 2, 3, 4];
+loop i, v in array {
+    println(i, v);
+}
+println("");
+
+// loop over array, only values
+loop v in array {
+    println(v);
+}
+println("");
+
+// loop over hash with key and value
+let c = {"hello": 13, "there": 37};
+loop k, v in c {
+    println(k, v);
+}
+println("");
+
+// loop over hash, only key
+loop k in c {
+    println(c);
+}

@@ -1,0 +1,21 @@
+const createPerson = fun(name) {
+    const person = {};
+    person.name = name;
+    person.getName = fun() {
+        return person.name;
+    };
+    person.print = fun() {
+        println(person.name);
+    };
+
+    return person;
+};
+
+let hans = createPerson("Hans Maulwurf");
+
+hans.print();
+
+hans.name = "Homer Simpson";
+hans.print();
+
+println(hans);
