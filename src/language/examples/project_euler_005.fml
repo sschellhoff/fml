@@ -1,0 +1,36 @@
+// this solution is really slow
+const divides = fun(number, divisor) {
+    return number % divisor == 0;
+};
+
+const divisors = [20, 19, 18, 17, 16, 15, 14, 13, 12, 11];
+
+const fitsRule = fun(number) {
+    loop divisor in divisors {
+        if !divides(number, divisor) {
+            return false;
+        }
+    }
+    return true;
+};
+
+const getStartingNumber = fun() {
+    let number = 2 * 3 * 5 * 7 * 11 * 13 * 17 * 19;
+    let addition = 1;
+    loop forever {
+        if divides(number + addition, 20) {
+            return number + addition;
+        }
+        addition += 1;
+    }
+};
+
+let number = getStartingNumber();
+println("start looking at", number);
+loop forever {
+    if fitsRule(number) {
+        println("solution", number);
+        break;
+    }
+    number += 20;
+}
