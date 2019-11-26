@@ -1,0 +1,15 @@
+let sumOfSquares = 0;
+let squareOfSums = 0;
+
+loop number in 1..101 {
+    sumOfSquares += number * number;
+    squareOfSums += number;
+}
+
+squareOfSums *= squareOfSums;
+
+println("Sum of squares", sumOfSquares);
+println("Square of sums", squareOfSums);
+
+let diff = squareOfSums - sumOfSquares;
+println("Difference", diff);
