@@ -1,0 +1,49 @@
+const testIsPalindrome = fun() {
+    println(isPalindrome(1));
+    println(isPalindrome(11));
+    println(isPalindrome(121));
+    println(isPalindrome(1221));
+    println(isPalindrome(12121));
+    println(isPalindrome(12321));
+    println(isPalindrome(12));
+    println(isPalindrome(1231));
+    println(isPalindrome(123));
+};
+
+
+const getChar = fun (string, position ) {
+    if position < 0 {
+        return "";
+    }
+    if position >= len(string) {
+        return "";
+    }
+    return substring(string, position, position+1);
+};
+
+const isPalindrome = fun(number) {
+    let strNumber = str(number);
+    let length = len(strNumber);
+    let max = length / 2;
+    loop i in 0..max {
+        const j = length - i - 1;
+        if getChar(strNumber, i) != getChar(strNumber, j) {
+            return false;
+        }
+    }
+    return true;
+};
+
+let largest = 0;
+loop i in 100..1000 {
+    loop j in 100..1000 {
+        const product = i * j;
+        if product > largest {
+            if isPalindrome(product) {
+                largest = product;
+            }
+        }
+    }
+}
+
+println(largest);
