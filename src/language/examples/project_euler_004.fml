@@ -36,7 +36,7 @@ const isPalindrome = fun(number) {
 
 let largest = 0;
 loop i in 100..1000 {
-    loop j in 100..1000 {
+    loop j in i..1000 {
         const product = i * j;
         if product > largest {
             if isPalindrome(product) {
