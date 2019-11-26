@@ -4,8 +4,8 @@ It is highly inspired by [Bob Nystrom](https://twitter.com/munificentbob)s [craf
 You can start the program without any arguments to get a really simple repl. Or you can add a filepath as an argument to run a file of code.
 
 ## Buildin
-Set GOROOT properly to the starting directory.
-On linux, run `export GOPATH=(pwd)`, then go to the code directory `cd src/language` and run the makefile `make`.
+Set GOPATH properly to the starting directory.\
+On linux, run `export GOPATH=(pwd)`, then go to the code directory `cd src/language` and run the makefile `make`.\
 To run the interpreters REPL: `./interpreter`, to run a file, run `./interpreter filepath`. For example: `./interpreter examples/project_euler_001.fml`.
 
 ## Examples
