@@ -1,0 +1,15 @@
+import;
+import "module1" as m1
+import "module2" as m2
+
+const main = fun() {
+    println("running main");
+    m1.doIt();
+    println(m1.someValue);
+    m2.doIt();
+    println(m1.someValue);
+};
+
+main();
+m1 = 1337;
+println(m1);

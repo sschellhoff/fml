@@ -32,3 +32,14 @@ func (p *Program) String() string {
 }
 
 
+type Module struct {
+    Statements []Statement
+}
+
+func (m *Module) String() {
+    var out bytes.Buffer
+    for _, s := range m.Statements {
+        out.WriteString(s.String())
+    }
+    return out.String()
+}

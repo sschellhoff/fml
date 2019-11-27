@@ -46,6 +46,8 @@ const (
     FOREVER = "FOREVER"
     TRY = "TRY"
     CATCH = "CATCH"
+    IMPORT = "IMPORT"
+    AS = "AS"
 
     ADD = "+"
     SUB = "-"
@@ -102,6 +104,8 @@ var reservedWords = map[string]TokenType{
     "forever": FOREVER,
     "try": TRY,
     "catch": CATCH,
+    "import": IMPORT,
+    "as": AS,
 }
 
 func TypeFromIdent(value string) TokenType {

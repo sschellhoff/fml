@@ -1,0 +1,6 @@
+import "module1" as m1
+
+const doIt = fun() {
+    println("doIt from module 2");
+    m1.someValue = 42;
+};

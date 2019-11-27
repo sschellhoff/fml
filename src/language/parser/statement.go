@@ -5,6 +5,16 @@ import (
     "language/token"
 )
 
+func (p *Parser) parseModuleLevelStmt() ast.Statement {
+    nextType := p.peek().Type
+    switch nextType {
+    case token.IMPORT:
+        return p.parseImport()
+    default:
+        return p.parseStmt()
+    }
+}
+
 func (p *Parser) parseStmt() ast.Statement {
     nextType := p.peek().Type
     switch nextType {
@@ -323,3 +333,33 @@ func (p *Parser) parseExprStmt() *ast.ExpressionStatement {
     return &ast.ExpressionStatement{Expr: expr}
 }
 
+func (p *Parser) parseImport() *ast.ImportStatement {
+    if !p.match(token.IMPORT) {
+        p.pushNewError("expected import", p.peek())
+        return nil
+    }
+
+    path := p.advance()
+    if path.Type != token.STRING {
+        p.pushNewError("expected string", path)
+        return nil
+    }
+
+    if !p.match(token.AS) {
+        p.pushNewError("expected as", p.peek())
+        return nil
+    }
+
+    name := p.advance()
+    if name.Type != token.IDENTIFIER {
+        p.pushNewError("expected identifier", name)
+        return nil
+    }
+
+    if !p.match(token.SEMICOLON) {
+        p.pushNewError("expected semicolon", p.peek())
+        return nil
+    }
+
+    return &ast.ImportStatement{Path: path.Literal, Name: name.Literal}
+}
