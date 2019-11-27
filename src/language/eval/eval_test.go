@@ -842,7 +842,7 @@ func evaluate(t *testing.T, input string) object.Object {
     handleParserErrors(t, errors)
 
     env := object.NewEnvironment()
-    return Eval(program, env)
+    return Eval(program, env, make(map[string]*object.Module))
 }
 
 func handleParserErrors(t *testing.T, errors []error) {

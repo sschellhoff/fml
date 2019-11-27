@@ -1,15 +1,24 @@
-import;
-import "module1" as m1
-import "module2" as m2
+import "module1.fml" as m1;
+import "module2.fml" as m2;
+
+const doIt = fun() {
+    println("doIt from main");
+};
+
+// importing module at this moment, so that doIt is defined for the usage in module3.
+// this is only needed in case of circular dependencies
+import "module3.fml" as m3;
 
 const main = fun() {
-    println("running main");
+    println("running main method");
     m1.doIt();
+    println("printing m1.someValue:");
     println(m1.someValue);
     m2.doIt();
+    println("printing m1.someValue:");
     println(m1.someValue);
 };
 
 main();
-m1 = 1337;
+println("printing module 1 path:");
 println(m1);

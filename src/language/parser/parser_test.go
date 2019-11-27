@@ -23,6 +23,27 @@ func TestProgram(t *testing.T) {
     }
 }
 
+func TestImport(t *testing.T) {
+    input := "import \"some module path\" as my_module;"
+
+    program := parseProgram(t, input)
+
+    handleProgramLength(t, program, 1)
+
+    importStmt, ok := program.Statements[0].(*ast.ImportStatement)
+    if !ok {
+        t.Fatalf("Expected import, got %T", program.Statements[0])
+    }
+
+    if importStmt.Name != "my_module" {
+        t.Fatalf("Expected another module alias, got \"%s\", expected \"%s\"", importStmt.Name, "my_module")
+    }
+
+    if importStmt.Path != "some module path" {
+        t.Fatalf("Expected another modulepath, got \"%s\", expected \"%s\"", importStmt.Path, "some module path")
+    }
+}
+
 func TestTryCatch(t *testing.T) {
     input := "try {} catch exception {}"
 

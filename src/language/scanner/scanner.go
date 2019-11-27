@@ -13,6 +13,7 @@ type Scanner struct {
     current_idx int
     start_last_line int
     line_counter int
+    filepath string
 }
 
 const nullString string = "\x00"

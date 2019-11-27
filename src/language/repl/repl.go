@@ -58,7 +58,7 @@ func parse(code string) (*ast.Program, []error) {
 }
 
 func evaluate(program *ast.Program, env *object.Environment, out io.Writer) {
-    evaluated := eval.Eval(program, env)
+    evaluated := eval.Eval(program, env, make(map[string]*object.Module))
 
     io.WriteString(out, evaluated.String())
 

@@ -21,7 +21,9 @@ const (
     BUILTIN_OBJECT = "BUILTIN"
     ARRAY_OBJECT = "ARRAY"
     HASH_OBJECT = "HASH"
+    MODULE_OBJECT = "MODULE"
     ERROR_OBJECT = "ERROR"
+    PARSER_ERRORS_OBJECT = "PARSERERRORS"
 )
 
 type ObjectType string
@@ -170,6 +172,29 @@ func (e *Error) String() string {
 }
 
 
+type ParserErrors struct {
+    Errors []error
+}
+
+func (p *ParserErrors) Type() ObjectType {
+    return PARSER_ERRORS_OBJECT
+}
+
+func (p *ParserErrors) String() string {
+    var out bytes.Buffer
+
+    strValues := []string{"Parser errors:"}
+
+    for _, e := range p.Errors {
+        strValues = append(strValues, e.Error())
+    }
+
+    out.WriteString(strings.Join(strValues, "\n"))
+
+    return out.String()
+}
+
+
 type Function struct {
     Parameters []string
     Body *ast.BlockStatement
@@ -265,4 +290,18 @@ func (h *Hash) String() string {
     out.WriteString("}")
 
     return out.String()
+}
+
+
+type Module struct {
+    Path string
+    Env *Environment
+}
+
+func (m *Module) Type() ObjectType {
+    return MODULE_OBJECT
+}
+
+func (m *Module) String() string {
+    return m.Path
 }

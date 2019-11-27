@@ -2,39 +2,37 @@ package run
 
 import (
     "fmt"
-    "io/ioutil"
-    "language/scanner"
-    "language/parser"
+    "path/filepath"
     "language/eval"
     "language/object"
     "language/ast"
+    "language/frontend"
 )
 
-func Run(filepath string) {
-    code, err := readFile(filepath)
-    if err != nil {
-        fmt.Printf("There was an error while reading the input: %s", err.Error())
-        return
-    }
-    environment := object.NewEnvironment()
-    program, errors := parse(code)
+func Run(path string) {
+    program, errors := frontend.Build(path)
 
     if len(errors) > 0 {
         printErrors(errors)
         return
     }
-    evaluate(program, environment)
+    evaluate(program, path)
 }
 
-func parse(code string) (*ast.Program, []error) {
-    s := scanner.New(code)
-    p := parser.New(s)
-    return  p.Parse()
-}
-
-func evaluate(program *ast.Program, env *object.Environment) {
-    result := eval.Eval(program, env)
-    if result.Type() == object.ERROR_OBJECT {
+func evaluate(program *ast.Program, path string) {
+    absPath, err := filepath.Abs(path)
+    if err != nil {
+        fmt.Printf(err.Error())
+        return
+    }
+    path = absPath
+    eval.MODULEPATH = filepath.Dir(path)
+    mainModuleEnv := object.NewEnvironment()
+    mainModule := &object.Module{Path: path, Env: mainModuleEnv}
+    modules := make(map[string]*object.Module)
+    modules[path] = mainModule
+    result := eval.Eval(program, mainModuleEnv, modules)
+    if result.Type() == object.ERROR_OBJECT || result.Type() == object.PARSER_ERRORS_OBJECT {
         fmt.Printf("\t%s\n", result.String())
     }
 }
@@ -43,12 +41,4 @@ func printErrors(errors []error) {
     for _, msg := range errors {
         fmt.Printf("\t%s\n", msg.Error())
     }
-}
-
-func readFile(filepath string) (string, error) {
-    content, err := ioutil.ReadFile(filepath)
-    if err != nil {
-        return "", err
-    }
-    return string(content), nil
 }

@@ -1,9 +1,7 @@
-import "module2" as m2
-
-println("module 1");
+println("running module 1");
 
 const doIt = fun() {
     println("doIt from module 1");
 };
 
-let someValule = 1337;
+let someValue = 1337;
