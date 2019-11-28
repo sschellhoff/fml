@@ -1,0 +1,17 @@
+const calculateTriplet = fun() {
+    loop a in 1..332 {
+        const a_squared = a * a;
+        loop b in (a+1)..499 {
+            const c = 1000-a-b;
+            if c <= b {
+                break;
+            }
+            const b_squared = b * b;
+            if a*a + b*b == c*c {
+                return a*b*c;
+            }
+        }
+    }
+};
+
+println(calculateTriplet());
