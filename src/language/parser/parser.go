@@ -38,7 +38,7 @@ func (p *Parser) Parse() (*ast.Program, []error) {
     result := ast.Program{Statements: make([]ast.Statement, 0)}
 
     for !p.HadErrors(){
-        stmt := p.parseStmt()
+        stmt := p.parseModuleLevelStmt()
         if stmt != nil {
             result.Statements = append(result.Statements, stmt)
         } else {

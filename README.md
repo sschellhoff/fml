@@ -14,7 +14,7 @@ To run the interpreters REPL: `./interpreter`, to run a file, run `./interpreter
 
 
 ## Coming soon
-* module system
 * plugins (for own code wrappers and stuff)
 * more tests
 * lots of refactoring
+* extend and modularize library

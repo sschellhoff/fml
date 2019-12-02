@@ -222,3 +222,22 @@ func (k *KVRangeLoopStatement) String() string {
 
     return out.String()
 }
+
+
+type ImportStatement struct {
+    Path string
+    Name string
+}
+
+func (i *ImportStatement) statementNode() {}
+
+func(i *ImportStatement) String() string {
+    var out bytes.Buffer
+
+    out.WriteString("import ")
+    out.WriteString(i.Path)
+    out.WriteString(" as ")
+    out.WriteString(i.Name)
+
+    return out.String()
+}

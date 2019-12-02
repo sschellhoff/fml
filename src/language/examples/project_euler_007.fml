@@ -1,0 +1,28 @@
+const isPrime = fun(number) {
+    if number == 2 {
+        return true;
+    } else if number % 2 == 0 {
+        return false;
+    }
+    let c = 3;
+    loop c * c <= num {
+        if num % c == 0 {
+            return false;
+        }
+        c += 2;
+    }
+
+    return true;
+};
+
+let primeCounter = 1;
+let num = 1;
+
+loop primeCounter < 10001 {
+    num += 2;
+    if isPrime(num) {
+        primeCounter += 1;
+    }
+}
+
+println(num);

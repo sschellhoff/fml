@@ -1,0 +1,7 @@
+println("running module 1");
+
+const doIt = fun() {
+    println("doIt from module 1");
+};
+
+let someValue = 1337;

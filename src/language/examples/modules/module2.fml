@@ -1,0 +1,7 @@
+import "module1.fml" as m1;
+
+const doIt = fun() {
+    println("doIt from module 2");
+    m1.doIt();
+    m1.someValue = 42;
+};

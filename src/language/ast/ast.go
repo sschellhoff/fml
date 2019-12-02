@@ -21,6 +21,7 @@ type Expression interface {
 
 type Program struct {
     Statements []Statement
+    Path string
 }
 
 func (p *Program) String() string {
@@ -30,5 +31,4 @@ func (p *Program) String() string {
     }
     return out.String()
 }
-
 
