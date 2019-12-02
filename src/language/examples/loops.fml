@@ -24,7 +24,7 @@ loop forever {
 println("");
 
 // loop over array with indices
-let array = [0, 1, 2, 3, 4];
+let array = [1, 1, 2, 3, 5, 8];
 loop i, v in array {
     println(i, v);
 }
@@ -45,5 +45,5 @@ println("");
 
 // loop over hash, only key
 loop k in c {
-    println(c);
+    println(k);
 }

@@ -5,17 +5,17 @@ println(a);
 const b = 42; // can not change b
 // b = 12; would result in an error
 
-let c = [1, 2, 3]; // can change c and it's contents
+let c = [1, 2, 3]; // can change c and its contents
 c = "something else";
 
-const d = [1, 2, 3]; // can not change d, but it's contents
+const d = [1, 2, 3]; // can not change d, but its contents
 d[0] = 42;
 println(d);
 
-let e = {}; // can change e and it's contents
+let e = {}; // can change e and its contents
 e.something = "else";
 
-const f = {}; // can not change f, but it's contents
+const f = {}; // can not change f, but its contents
 f.doIt = fun() {
     return 42;
 };
