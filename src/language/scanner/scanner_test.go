@@ -23,6 +23,11 @@ func TestNextToken(t *testing.T) {
         */
         *
         */
+        /**/
+        /***/
+        /*
+        // something
+        */
     }
     : else in true false null something "jaja"
     a.b();

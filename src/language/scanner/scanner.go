@@ -309,9 +309,9 @@ func (s *Scanner) readNestedMultilineComment() error {
         if s.isAtEnd() {
             return errors.New("unexpected end of file in multiline comment")
         }
-        if s.match("*") && s.match("/") {
+        if s.match2("*", "/") {
             return nil
-        } else if s.match("/") && s.match("*") {
+        } else if s.match2("/", "*") {
             if err := s.readNestedMultilineComment(); err != nil {
                 return err
             }
