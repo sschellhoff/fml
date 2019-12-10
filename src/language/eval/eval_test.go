@@ -30,6 +30,14 @@ func TestPrograms(t *testing.T) {
         person.setName("Mr. Meeseeks");
         person.getName();
         `, "Mr. Meeseeks"},
+        {
+            `
+            let a = 1337
+            let b = 42
+            const c = a + b
+            c
+            `, 1379,
+        },
     }
 
     for _, tt := range tests {

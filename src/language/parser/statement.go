@@ -59,10 +59,7 @@ func (p *Parser) parseLet() *ast.LetStatement {
         return nil
     }
 
-    if !p.match(token.SEMICOLON) {
-        p.pushNewError("Missing semicolon", p.peek())
-        return nil
-    }
+    p.match(token.SEMICOLON)
 
     return &ast.LetStatement{Name: name.Literal, Initializer: expr}
 }
@@ -88,10 +85,7 @@ func (p *Parser) parseConst() *ast.ConstStatement {
         return nil
     }
 
-    if !p.match(token.SEMICOLON) {
-        p.pushNewError("Missing semicolon", p.peek())
-        return nil
-    }
+    p.match(token.SEMICOLON)
 
     return &ast.ConstStatement{Name: name.Literal, Initializer: expr}
 }
@@ -219,10 +213,7 @@ func (p *Parser) parseReturn() *ast.ReturnStatement {
     }
     result := p.expression()
 
-    if !p.match(token.SEMICOLON) {
-        p.pushNewError("Missing semicolon", p.peek())
-        return nil
-    }
+    p.match(token.SEMICOLON)
 
     return &ast.ReturnStatement{Result: result}
 }
@@ -238,10 +229,7 @@ func (p *Parser) parseBreak() *ast.BreakStatement {
         return nil
     }
 
-    if !p.match(token.SEMICOLON) {
-        p.pushNewError("Missing semicolon", p.peek())
-        return nil
-    }
+    p.match(token.SEMICOLON)
 
     return &ast.BreakStatement{}
 }
@@ -257,10 +245,7 @@ func (p *Parser) parseContinue() *ast.ContinueStatement {
         return nil
     }
 
-    if !p.match(token.SEMICOLON) {
-        p.pushNewError("Missing semicolon", p.peek())
-        return nil
-    }
+    p.match(token.SEMICOLON)
 
     return &ast.ContinueStatement{}
 }
@@ -326,10 +311,7 @@ func (p *Parser) parseExprStmt() *ast.ExpressionStatement {
     if expr == nil {
         return nil
     }
-    if !p.match(token.SEMICOLON) {
-        p.pushNewError("expected semicolon", p.peek())
-        return nil
-    }
+    p.match(token.SEMICOLON)
     return &ast.ExpressionStatement{Expr: expr}
 }
 
@@ -356,10 +338,7 @@ func (p *Parser) parseImport() *ast.ImportStatement {
         return nil
     }
 
-    if !p.match(token.SEMICOLON) {
-        p.pushNewError("expected semicolon", p.peek())
-        return nil
-    }
+    p.match(token.SEMICOLON)
 
     return &ast.ImportStatement{Path: path.Literal, Name: name.Literal}
 }

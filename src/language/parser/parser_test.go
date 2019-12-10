@@ -23,6 +23,49 @@ func TestProgram(t *testing.T) {
     }
 }
 
+func TestMissingSemicolon(t *testing.T) {
+    input := `
+    import "some module path" as my_module
+    let a = 1 + 1337 * 42
+    const f = fun(a, b) {
+        return a + b
+    }
+    f(13, 37)
+    if a == f(1, 2) {
+        print(true)
+    }
+    `
+
+    program := parseProgram(t, input)
+
+    handleProgramLength(t, program, 5)
+
+    _, ok := program.Statements[0].(*ast.ImportStatement)
+    if !ok {
+        t.Fatalf("Expected import, got %T", program.Statements[0])
+    }
+
+    _, ok = program.Statements[1].(*ast.LetStatement)
+    if !ok {
+        t.Fatalf("Expected let, got %T", program.Statements[1])
+    }
+
+    _, ok = program.Statements[2].(*ast.ConstStatement)
+    if !ok {
+        t.Fatalf("Expected const, got %T", program.Statements[2])
+    }
+    
+    _, ok = program.Statements[3].(*ast.ExpressionStatement)
+    if !ok {
+        t.Fatalf("Expected call expression statement, got %T", program.Statements[3])
+    }
+
+    _, ok = program.Statements[4].(*ast.IfStatement)
+    if !ok {
+        t.Fatalf("Expected if-statement, got %T", program.Statements[4])
+    }
+}
+
 func TestImport(t *testing.T) {
     input := "import \"some module path\" as my_module;"
 
