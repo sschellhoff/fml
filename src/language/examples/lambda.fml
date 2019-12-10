@@ -1,0 +1,137 @@
+// This example code show how to write lambda calculus in fml.
+
+const ID = fun(x) {
+    return x
+}
+
+const TRUE = fun(a) {
+    return fun(b) {
+        return a
+    }
+}
+
+const FALSE = fun(a) {
+    return fun(b) {
+        return b
+    }
+}
+
+const NOT = fun(a) {
+    return a(FALSE)(TRUE)
+}
+
+const AND = fun(a) {
+    return fun(b) {
+        return a(b)(FALSE)
+    }
+}
+
+const OR = fun(a) {
+    return fun(b) {
+        return a(TRUE)(b)
+    }
+}
+
+const NAND = fun(a) {
+    return fun(b) {
+        return NOT(AND(a)(b))
+    }
+}
+
+const NOR = fun(a) {
+    return fun(b) {
+        return NOT(OR(a)(b))
+    }
+}
+
+const XOR = fun(a) {
+    return fun(b) {
+        return a(b(FALSE)(TRUE))(b(TRUE)(FALSE))
+    }
+}
+
+const EQ = fun(a) {
+    return fun(b) {
+        return a(b(TRUE)(FALSE))(b(FALSE)(TRUE))
+    }
+}
+
+const BOOL_FUNCTION_TO_NAME = {str(TRUE): "TRUE", str(FALSE): "FALSE"}
+
+const PRINT = fun(b) {
+    if !isFunction(b) {
+        println("you only have functions in lambda calculus")
+    }
+    const fun_str = str(b)
+    const value = BOOL_FUNCTION_TO_NAME[fun_str]
+    println(value ? value : fun_str)
+}
+
+PRINT(TRUE)
+PRINT(FALSE)
+
+println("not false:")
+PRINT(NOT(FALSE))
+
+println("not true:")
+PRINT(NOT(TRUE))
+
+println("false and false:")
+PRINT(AND(FALSE)(FALSE))
+
+println("false and true:")
+PRINT(AND(FALSE)(TRUE))
+
+println("true and false:")
+PRINT(AND(TRUE)(FALSE))
+
+println("true and true:")
+PRINT(AND(TRUE)(TRUE))
+
+println("false or false:")
+PRINT(OR(FALSE)(FALSE))
+
+println("false or true:")
+PRINT(OR(FALSE)(TRUE))
+
+println("true or false:")
+PRINT(OR(TRUE)(FALSE))
+
+println("true or true:")
+PRINT(OR(TRUE)(TRUE))
+
+println("false nand false:")
+PRINT(NAND(FALSE)(FALSE))
+println("false nand true:")
+PRINT(NAND(FALSE)(TRUE))
+println("true nand false:")
+PRINT(NAND(TRUE)(FALSE))
+println("true nand true:")
+PRINT(NAND(TRUE)(TRUE))
+
+println("false nor false:")
+PRINT(NOR(FALSE)(FALSE))
+println("false nor true:")
+PRINT(NOR(FALSE)(TRUE))
+println("true nor false:")
+PRINT(NOR(TRUE)(FALSE))
+println("true nor true:")
+PRINT(NOR(TRUE)(TRUE))
+
+println("false xor false:")
+PRINT(XOR(FALSE)(FALSE))
+println("false xor true:")
+PRINT(XOR(FALSE)(TRUE))
+println("true xor false:")
+PRINT(XOR(TRUE)(FALSE))
+println("true xor true:")
+PRINT(XOR(TRUE)(TRUE))
+
+println("false eq false:")
+PRINT(EQ(FALSE)(FALSE))
+println("false eq true:")
+PRINT(EQ(FALSE)(TRUE))
+println("true eq false:")
+PRINT(EQ(TRUE)(FALSE))
+println("true eq true:")
+PRINT(EQ(TRUE)(TRUE))
