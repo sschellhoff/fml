@@ -1,9 +1,11 @@
 // This example code show how to write lambda calculus in fml.
 
+// the id function
 const ID = fun(x) {
     return x
 }
 
+// boolean logic
 const TRUE = fun(a) {
     return fun(b) {
         return a
@@ -56,17 +58,19 @@ const EQ = fun(a) {
     }
 }
 
-const BOOL_FUNCTION_TO_NAME = {str(TRUE): "TRUE", str(FALSE): "FALSE"}
+// some helpers to print TRUE and FALSE
+const LAMBDA_BOOLEAN_TO_STRING = {str(TRUE): "TRUE", str(FALSE): "FALSE"}
 
 const PRINT = fun(b) {
     if !isFunction(b) {
         println("you only have functions in lambda calculus")
     }
     const fun_str = str(b)
-    const value = BOOL_FUNCTION_TO_NAME[fun_str]
+    const value = LAMBDA_BOOLEAN_TO_STRING[fun_str]
     println(value ? value : fun_str)
 }
 
+// usage of boolean logic:
 PRINT(TRUE)
 PRINT(FALSE)
 
@@ -135,3 +139,73 @@ println("true eq false:")
 PRINT(EQ(TRUE)(FALSE))
 println("true eq true:")
 PRINT(EQ(TRUE)(TRUE))
+
+
+// and numbers:
+const ZERO = fun(a) {
+    return fun(b) {
+        return b
+    }
+}
+
+const SUCC = fun(a) {
+    return fun(b) {
+        return fun(c) {
+            return b(a(b)(c))
+        }
+    }
+}
+
+const ADD = fun(a) {
+    return fun(b) {
+        return a(SUCC)(b)
+    }
+}
+
+const MULT = fun(a) {
+    return fun(b) {
+        return fun(c) {
+            return a(b(c))
+        }
+    }
+}
+
+const POW = fun(a) {
+    return fun(b) {
+        return b(a)
+    }
+}
+
+// helpers to print numbers:
+const LAMBDA_INT_TO_INT = fun(num) {
+    return num(fun(x) { return x + 1 }) (0)
+}
+
+const PRINT_NUM = fun(num) {
+    println(LAMBDA_INT_TO_INT(num))
+}
+
+// some number definitions to make work easier
+const ONE = SUCC(ZERO)
+const TWO = SUCC(ONE)
+const THREE = SUCC(TWO)
+const FOUR = ADD(TWO)(TWO)
+const FIVE = SUCC(FOUR)
+const SIX = MULT(THREE)(TWO)
+const SEVEN = SUCC(SIX)
+const EIGHT = POW(TWO)(THREE)
+const NINE = MULT(THREE)(THREE)
+const TEN = SUCC(NINE)
+
+// some examples:
+PRINT_NUM(ZERO)
+PRINT_NUM(ONE)
+PRINT_NUM(TWO)
+PRINT_NUM(THREE)
+PRINT_NUM(FOUR)
+PRINT_NUM(FIVE)
+PRINT_NUM(SIX)
+PRINT_NUM(SEVEN)
+PRINT_NUM(EIGHT)
+PRINT_NUM(NINE)
+PRINT_NUM(TEN)
