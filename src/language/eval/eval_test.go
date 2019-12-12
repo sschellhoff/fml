@@ -299,6 +299,9 @@ func TestEvalIndex(t *testing.T) {
         {"{true: false}[false];", nil},
         {"{true: 1, 1: false}[true];", 1},
         {"{true: 1, 1: false}[1];", false},
+        {"\"hello world\"[0]", "h"},
+        {"\"hello world\"[1]", "e"},
+        {"\"hello world\"[6]", "w"},
     }
 
     for _, tt := range tests {

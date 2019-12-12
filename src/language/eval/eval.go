@@ -317,6 +317,8 @@ func evalIndex(lhs object.Object, index object.Object) object.Object {
         return evalHash(lhs, index)
     case *object.Module:
         return evalModule(lhs, index)
+    case *object.String:
+        return evalStringIndex(lhs, index)
     default:
         return makeError("Cannot index on %s", lhs.Type())
     }
@@ -363,12 +365,20 @@ func evalHash(lhs *object.Hash, index object.Object) object.Object {
 func evalArray(lhs *object.Array, index object.Object) object.Object {
     idx, ok := index.(*object.Integer)
     if !ok {
-        return makeError("Can only use integer als index on array, got %s", index.Type())
+        return makeError("Can only use integer as index on array, got %s", index.Type())
     }
     if idx.Value < 0 || idx.Value >= int64(len(lhs.Elements)) {
         return NULL
     }
     return lhs.Elements[idx.Value]
+}
+
+func evalStringIndex(lhs *object.String, index object.Object) object.Object {
+    idx, ok := index.(*object.Integer)
+    if !ok {
+        return makeError("Can only use integer as index on string, got %s", index.Type())
+    }
+    return builtins["substring"].Function(lhs, idx, &object.Integer{Value: idx.Value+1})
 }
 
 func evalModule(lhs *object.Module, index object.Object) object.Object {
