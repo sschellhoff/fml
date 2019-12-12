@@ -42,6 +42,11 @@ func Eval(node ast.Node, env *object.Environment, modules map[string]*object.Mod
             }
             return NULL
         }
+        old_MODULEPATH := MODULEPATH
+        MODULEPATH = filepath.Dir(path)
+        defer func() {
+            MODULEPATH = old_MODULEPATH
+        }()
         moduleCode, errs := frontend.Build(path)
         if len(errs) > 0 {
             return makeParserErrors(errs)

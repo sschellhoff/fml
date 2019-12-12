@@ -1,6 +1,4 @@
-// currently, this works, import path should be relative to this file later
-// so it should be ../module1.fml
-import "module1.fml" as m1;
+import "../module1.fml" as m1;
 println("Hello from module 4");
 
 m1.doIt();

@@ -1,6 +1,6 @@
 import "module1.fml" as m1;
-import "module2.fml" as m2;
 import "submodules/module4.fml" as m4;
+import "module2.fml" as m2;
 
 const doIt = fun() {
     println("doIt from main");
