@@ -242,6 +242,26 @@ var builtins = map[string]*object.Builtin{
             }
         },
     },
+    "copy": &object.Builtin{
+        Function: func(args ...object.Object) object.Object {
+            if len(args) != 1 {
+                return makeError("wrong number of arguments, want 1, got %d", len(args))
+            }
+
+            arg := args[0]
+            return shallowCopy(arg)
+        },
+    },
+    "deepcopy": &object.Builtin{
+        Function: func(args ...object.Object) object.Object {
+            if len(args) != 1 {
+                return makeError("wrong number of arguments, want 1, got %d", len(args))
+            }
+
+            arg := args[0]
+            return deepCopy(arg)
+        },
+    },
     "isInt": &object.Builtin{
         Function: func(args ...object.Object) object.Object {
             return isOfTypeHelper(object.INTEGER_OBJECT, args...)
@@ -308,4 +328,44 @@ func isOfTypeHelper(wantedType object.ObjectType, args ...object.Object) object.
 
     arg := args[0]
     return boolToBoolean(arg.Type() == wantedType)
+}
+
+func shallowCopy(arg object.Object) object.Object {
+    switch value := arg.(type) {
+    case *object.Array:
+        result := &object.Array{Elements: make([]object.Object, len(value.Elements))}
+        for i, v := range value.Elements {
+            result.Elements[i] = v
+        }
+        return result
+    case *object.Hash:
+        result := &object.Hash{Pairs: make(map[object.HashKey]object.HashPair)}
+        for k, v := range value.Pairs {
+            result.Pairs[k] = v
+        }
+        return result
+    default:
+        // no need to copy
+        return arg
+    }
+}
+
+func deepCopy(arg object.Object) object.Object {
+    switch value := arg.(type) {
+    case *object.Array:
+        result := &object.Array{Elements: make([]object.Object, len(value.Elements))}
+        for i, v := range value.Elements {
+            result.Elements[i] = deepCopy(v)
+        }
+        return result
+    case *object.Hash:
+        result := &object.Hash{Pairs: make(map[object.HashKey]object.HashPair)}
+        for k, v := range value.Pairs {
+            result.Pairs[k] = object.HashPair{Key: v.Key, Value: deepCopy(v.Value)}
+        }
+        return result
+    default:
+        // no need to deepcopy
+        return arg
+    }
 }
