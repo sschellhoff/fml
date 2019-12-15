@@ -1,0 +1,16 @@
+import "lexer.fml" as lexer
+import "parser.fml" as parser
+import "token.fml" as token
+import "nfa.fml" as nfa
+
+const main = fun() {
+    //let regexp = "a.b*|c";
+    let regexp = "(a.b|€)*|c";
+    const scanner = lexer.create(regexp);
+    const parser = parser.create(scanner);
+    const ast = parser.parse();
+    const nfa = nfa.build(ast);
+    nfa.print();
+}
+
+main();

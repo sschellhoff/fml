@@ -1,0 +1,65 @@
+import "token.fml" as token
+
+const create = fun(lexer) {
+    let this = {};
+
+    let current_tok = null;
+    const advance = fun() {
+        let old_tok = current_tok;
+        current_tok = lexer.nextToken();
+        return old_tok;
+    }
+    const match = fun(type) {
+        if current_tok.type == type {
+            advance();
+            return true;
+        }
+        return false;
+    }
+    this.parse = fun() {
+        advance();
+        return alternative();
+    }
+    
+    const alternative = fun() {
+        let lhs = concat();
+        loop match(token.ALTERNATIVE) {
+            const rhs = concat();
+            lhs = [token.ALTERNATIVE, lhs, rhs];
+        }
+        return lhs;
+    }
+    const concat = fun() {
+        let lhs = kleene();
+        loop match(token.CONCAT) {
+            const rhs = kleene();
+            lhs = [token.CONCAT, lhs, rhs];
+        }
+        return lhs;
+    }
+    const kleene = fun() {
+        const lhs = value();
+        if match(token.KLEENE) {
+            return [token.KLEENE, lhs];
+        }
+        return lhs;
+    }
+    const value = fun() {
+        const tok = advance();
+        if tok.type == token.SYMBOL {
+            return [token.SYMBOL, tok.lexeme];
+        }
+        if tok.type == token.LPAREN {
+            const inner = alternative();
+            if !match(token.RPAREN) {
+                makeError("missing closing parenthesis");
+            }
+            return inner;
+        }
+        if tok.type == token.EPSILON {
+            return [token.EPSILON]
+        }
+        makeError("expected atomic expression");
+    }
+    return this;
+}

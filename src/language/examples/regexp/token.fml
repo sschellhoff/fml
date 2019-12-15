@@ -1,0 +1,12 @@
+const EOF = 0;
+const SYMBOL = 1;
+const KLEENE = 2;
+const ALTERNATIVE = 3;
+const EPSILON = 4;
+const CONCAT = 5;
+const LPAREN = 6;
+const RPAREN = 7;
+
+const create = fun(type, lexeme) {
+    return {"type": type, "lexeme": lexeme};
+}

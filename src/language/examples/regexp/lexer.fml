@@ -1,0 +1,45 @@
+import "token.fml" as token
+
+const create = fun(regexp) {
+    let this = {};
+
+    // fields
+    let idx = 0;
+    let last = len(regexp) - 1;
+    let input = regexp;
+
+    // methods
+    const advance = fun() {
+        const old_idx = idx;
+        idx += 1;
+        return input[old_idx];
+    }
+
+    this.nextToken = fun() {
+        if idx > last {
+            return token.create(token.EOF, "");
+        }
+        const next = advance();
+        if next == "€" {
+            return token.create(token.EPSILON, "");
+        }
+        if next == "*" {
+            return token.create(token.KLEENE, "");
+        }
+        if next == "|" {
+            return token.create(token.ALTERNATIVE, "");
+        }
+        if next == "." {
+            return token.create(token.CONCAT, "");
+        }
+        if next == "(" {
+            return token.create(token.LPAREN, "");
+        }
+        if next == ")" {
+            return token.create(token.RPAREN, "");
+        }
+        return token.create(token.SYMBOL, next);
+    }
+
+    return this;
+}

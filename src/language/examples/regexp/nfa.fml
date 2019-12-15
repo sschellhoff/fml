@@ -1,0 +1,48 @@
+import "token.fml" as token
+
+const createAutomaton = fun() {
+    let this = {};
+    let edges = [];
+    this.addState = fun() {
+        edges = push(edges, []);
+        return len(edges)-1;
+    }
+    this.addEdge = fun(from, label, to) {
+        edges[from] = push(edges[from], {"to": to, "label": label});
+    }
+    this.print = fun() {
+        loop i, edge in edges {
+            println(i, edge);
+        }
+    }
+    return this;
+}
+
+const build = fun(ast) {
+    const nfa = createAutomaton();
+    nfa.addState();
+    nfa.addState();
+    const build = fun(from, ast, to) {
+        if ast[0] == token.CONCAT {
+            const state = nfa.addState();
+            build(from, ast[1], state);
+            build(state, ast[2], to);
+        } else if ast[0] == token.KLEENE {
+            const state0 = nfa.addState();
+            const state1 = nfa.addState();
+            nfa.addEdge(from, null, to);
+            nfa.addEdge(from, null, state0);
+            nfa.addEdge(state1, null, to);
+            nfa.addEdge(state1, null, state0);
+            build(state0, ast[1], state1);
+        } else if ast[0] == token.ALTERNATIVE {
+            build(from, ast[1], to);
+            build(from, ast[2], to);
+        } else if ast[0] == token.SYMBOL {
+            nfa.addEdge(from, ast[1], to);
+        } else if ast[0] == token.EPSILON {
+        }
+    }
+    build(0, ast, 1);
+    return nfa;
+}

@@ -1,0 +1,21 @@
+const createSet = fun() {
+    let this = {};
+    let data = {};
+    this.contains = fun(elem) {
+        return data[elem] == true;
+    }
+    this.put = fun(elem) {
+        if this.contains(elem) {
+            return;
+        }
+        data[elem] = true;
+    }
+    this.getElements = fun() {
+        let result = [];
+        loop k, v in data {
+            result = push(result, k);
+        }
+        return result;
+    }
+    return this;
+}
