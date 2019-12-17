@@ -1,4 +1,4 @@
-const createSet = fun() {
+const empty = fun() {
     let this = {};
     let data = {};
     this.contains = fun(elem) {
@@ -17,5 +17,18 @@ const createSet = fun() {
         }
         return result;
     }
+    this.isEmpty = fun() {
+        loop k, v in data {
+            return false;
+        }
+        return true;
+    }
     return this;
+}
+
+const singleton = fun(elem) {
+    const result = empty();
+    result.put(elem);
+
+    return result;
 }

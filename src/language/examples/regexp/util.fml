@@ -1,0 +1,50 @@
+import "set.fml" as set
+
+const sort = fun(elements) {
+    const numElems = len(elements);
+    if numElems < 2 {
+        return elements;
+    }
+    const quicksort = fun(l, r) {
+        if l < r {
+            const mid = split(l, r);
+            quicksort(l, mid-1);
+            quicksort(mid+1, r);
+        }
+    }
+    const split = fun(l, r) {
+        let i = l;
+        let j = r - 1;
+        const pivot = elements[r];
+
+        loop forever {
+            loop i < r and elements[i]  < pivot {
+                i += 1;
+            }
+            loop j > l and elements[j] >= pivot {
+                j -= 1;
+            }
+
+            if i < j {
+                swap(i, j);
+            }
+            if i >= j {
+                break
+            }
+        }
+        swap(i, r);
+        return i;
+    }
+    const swap = fun(idx0, idx1) {
+        let t = elements[idx0];
+        elements[idx0] = elements[idx1];
+        elements[idx1] = t;
+    }
+    quicksort(0, numElems-1);
+}
+
+const setToHash = fun(s) {
+    let elements = s.getElements();
+    sort(elements);
+    return str(elements);
+}

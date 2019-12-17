@@ -1,4 +1,6 @@
 import "token.fml" as token
+import "set.fml" as set
+import "util.fml" as util
 
 const createAutomaton = fun() {
     let this = {};
@@ -9,6 +11,20 @@ const createAutomaton = fun() {
     }
     this.addEdge = fun(from, label, to) {
         edges[from] = push(edges[from], {"to": to, "label": label});
+    }
+    this.edgesFrom = fun(from) {
+        return deepcopy(edges[from]);
+    }
+    this.edge = fun(from, label) {
+        loop e in edges[from] {
+            if e.label == label {
+                return e.to;
+            }
+        }
+        return null;
+    }
+    this.numOfStates = fun() {
+        return len(edges);
     }
     this.print = fun() {
         loop i, edge in edges {
@@ -45,4 +61,49 @@ const build = fun(ast) {
     }
     build(0, ast, 1);
     return nfa;
+}
+
+const epsClosureSimple = fun (state, automaton) {
+    return epsClosure(set.singleton(state), automaton);
+}
+
+const epsClosure = fun(states, automaton) {
+    const result = set.empty();
+    let W = states.getElements();
+    loop len(W) != 0 {
+        let q = first(W);
+        W = rest(W);
+        if !result.contains(q) {
+            result.put(q);
+            const edges = automaton.edgesFrom(q);
+            loop e in edges {
+                if e.label == null {
+                    W = push(W, e.to);
+                }
+            }
+        }
+    }
+    return result;
+}
+
+const epsClosures = fun(automaton) {
+    let result = [];
+    const numStates = automaton.numOfStates();
+    loop state in 0..numStates {
+        let from = set.singleton(state);
+        result = push(result, epsClosure(from, automaton));
+    }
+    return result;
+}
+
+const nextState = fun(automaton, state, symbol) {
+    let S = set.empty();
+    const stateElements = state.getElements();
+    loop p in stateElements {
+        let q = automaton.edge(p, symbol);
+        if q != null {
+            S.put(q);
+        }
+    }
+    return epsClosure(S, automaton);
 }

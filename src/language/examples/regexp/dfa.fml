@@ -1,0 +1,37 @@
+import "nfa.fml" as nfa
+import "util.fml" as util
+
+const compute = fun(_nfa, symbols) {
+    const result = nfa.createAutomaton();
+
+    const S0 = nfa.epsClosureSimple(0, _nfa);
+    let W = [S0];
+    let setToStates = {};
+    setToStates[util.setToHash(S0)] = result.addState();
+
+    loop len(W) > 0 {
+        let P = first(W);
+        W = rest(W);
+        if P.isEmpty() {
+            continue
+        }
+        loop sym in symbols {
+            let Q = nfa.nextState(_nfa, P, sym);
+            if Q.isEmpty() {
+                continue
+            }
+            let Q_key = util.setToHash(Q);
+            if setToStates[Q_key] == null {
+                setToStates[Q_key] = result.addState();
+                W = push(W, Q);
+            }
+            let P_key = util.setToHash(P);
+            if setToStates[P_key] == null {
+                setToStates[P_key] = result.addState();
+            }
+            result.addEdge(setToStates[P_key], sym, setToStates[Q_key]);
+        }
+    }
+
+    return result;
+}
