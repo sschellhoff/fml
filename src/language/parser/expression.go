@@ -45,7 +45,7 @@ func (p *Parser) unary() ast.Expression {
         return nil
     }
 
-    return &ast.UnaryExpression{Op: op, Rhs: rhs}
+    return &ast.UnaryExpression{Op: op, Rhs: rhs, PosInfo: p.tokToPos(op)}
 }
 
 func (p *Parser) infix(lhs ast.Expression) ast.Expression {
@@ -63,12 +63,13 @@ func (p *Parser) infix(lhs ast.Expression) ast.Expression {
         return nil
     }
     
-    return &ast.InfixExpression{Op: op, Lhs: lhs, Rhs: rhs}
+    return &ast.InfixExpression{Op: op, Lhs: lhs, Rhs: rhs, PosInfo: p.tokToPos(op)}
 }
 
 func (p *Parser) funcLit() ast.Expression {
     p.openFunctionDefinition()
     defer p.closeFunctionDefinition()
+    funToken := p.peek()
     if !p.match(token.FUN) {
         p.pushNewError("Expected function literal", p.peek())
         return nil
@@ -90,7 +91,7 @@ func (p *Parser) funcLit() ast.Expression {
         return nil
     }
 
-    return &ast.FunctionLiteralExpression{Parameters: params, Body: body}
+    return &ast.FunctionLiteralExpression{Parameters: params, Body: body, PosInfo: p.tokToPos(funToken)}
 }
 
 func (p *Parser) functionParameters() ([]string, bool) {
@@ -113,6 +114,7 @@ func (p *Parser) functionParameters() ([]string, bool) {
 }
 
 func (p *Parser) conditional(cond ast.Expression) ast.Expression {
+    condToken := p.peek()
     if !p.match(token.QUESTION) {
         p.pushNewError("expected ?", p.peek())
         return nil
@@ -124,10 +126,11 @@ func (p *Parser) conditional(cond ast.Expression) ast.Expression {
     }
     elseExpr := p.expression()
 
-    return &ast.ConditionalExpression{Cond: cond, Then: thenExpr, Else: elseExpr}
+    return &ast.ConditionalExpression{Cond: cond, Then: thenExpr, Else: elseExpr, PosInfo: p.tokToPos(condToken)}
 }
 
 func (p *Parser) call(function ast.Expression) ast.Expression {
+    parenToken := p.peek()
     if !p.match(token.LPAREN) {
         p.pushNewError("Expected (", p.peek())
         return nil
@@ -143,7 +146,7 @@ func (p *Parser) call(function ast.Expression) ast.Expression {
         return nil
     }
 
-    return &ast.CallExpression{Function: function, Arguments: arguments}
+    return &ast.CallExpression{Function: function, Arguments: arguments, PosInfo: p.tokToPos(parenToken)}
 }
 
 func (p *Parser) functionArguments() ([]ast.Expression, bool) {
@@ -189,6 +192,7 @@ func (p *Parser) grouping() ast.Expression {
 }
 
 func (p *Parser) parseInt() ast.Expression {
+    intToken := p.peek()
     if p.is(token.INT) {
         tok := p.advance()
         intValue, err := strconv.ParseInt(tok.Literal, 10, 64)
@@ -196,7 +200,7 @@ func (p *Parser) parseInt() ast.Expression {
             p.pushError(err)
             return nil
         }
-        return &ast.IntegerLiteralExpression{Value: intValue}
+        return &ast.IntegerLiteralExpression{Value: intValue, PosInfo: p.tokToPos(intToken)}
     }
 
     p.pushNewError("expected integer-literal", p.peek())
@@ -204,6 +208,7 @@ func (p *Parser) parseInt() ast.Expression {
 }
 
 func (p *Parser) parseFloat() ast.Expression {
+    floatToken := p.peek()
     if p.is(token.FLOAT) {
         tok := p.advance()
         floatValue, err := strconv.ParseFloat(tok.Literal, 64)
@@ -211,7 +216,7 @@ func (p *Parser) parseFloat() ast.Expression {
             p.pushError(err)
             return nil
         }
-        return &ast.FloatLiteralExpression{Value: floatValue}
+        return &ast.FloatLiteralExpression{Value: floatValue, PosInfo: p.tokToPos(floatToken)}
     }
 
     p.pushNewError("expected float-literal", p.peek())
@@ -219,10 +224,11 @@ func (p *Parser) parseFloat() ast.Expression {
 }
 
 func (p *Parser) parseString() ast.Expression {
+    stringToken := p.peek()
     if p.is(token.STRING) {
         tok := p.advance()
         stringValue := tok.Literal
-        return &ast.StringLiteralExpression{Value: stringValue}
+        return &ast.StringLiteralExpression{Value: stringValue, PosInfo: p.tokToPos(stringToken)}
     }
 
     p.pushNewError("expected string-literal", p.peek())
@@ -230,10 +236,11 @@ func (p *Parser) parseString() ast.Expression {
 }
 
 func (p *Parser) parseIdentifier() ast.Expression {
+    idToken := p.peek()
     if p.is(token.IDENTIFIER) {
         tok := p.advance()
         name := tok.Literal
-        return &ast.IdentifierExpression{Name: name}
+        return &ast.IdentifierExpression{Name: name, PosInfo: p.tokToPos(idToken)}
     }
 
     p.pushNewError("expected identifier", p.peek())
@@ -241,25 +248,28 @@ func (p *Parser) parseIdentifier() ast.Expression {
 }
 
 func (p *Parser) parseBool() ast.Expression {
+    posInfo := p.tokToPos(p.peek())
     if p.match(token.TRUE) {
-        return &ast.BoolLiteralExpression{Value: true}
+        return &ast.BoolLiteralExpression{Value: true, PosInfo: posInfo}
     }
     if p.match(token.FALSE) {
-        return &ast.BoolLiteralExpression{Value: false}
+        return &ast.BoolLiteralExpression{Value: false, PosInfo: posInfo}
     }
     p.pushNewError("expected boolean", p.peek())
     return nil
 }
 
 func (p *Parser) parseNull() ast.Expression {
+    nullToken := p.peek()
     if p.match(token.NULL) {
-        return &ast.NullLiteralExpression{}
+        return &ast.NullLiteralExpression{PosInfo: p.tokToPos(nullToken)}
     }
     p.pushNewError("expected null", p.peek())
     return nil
 }
 
 func (p *Parser) parseHash() ast.Expression {
+    hashToken := p.peek()
     if !p.match(token.LBRACE) {
         p.pushNewError("expected hash", p.peek())
         return nil
@@ -288,10 +298,11 @@ func (p *Parser) parseHash() ast.Expression {
         p.pushNewError("expected }", p.peek())
         return nil
     }
-    return &ast.HashLiteral{Pairs: pairs}
+    return &ast.HashLiteral{Pairs: pairs, PosInfo: p.tokToPos(hashToken)}
 }
 
 func (p *Parser) parseArray() ast.Expression {
+    bracketToken := p.peek()
     if !p.match(token.LBRACKET) {
         p.pushNewError("expected array", p.peek())
         return nil
@@ -319,10 +330,11 @@ func (p *Parser) parseArray() ast.Expression {
         p.pushNewError("missing ]", p.peek())
         return nil
     }
-    return &ast.ArrayLiteral{Elements: elements}
+    return &ast.ArrayLiteral{Elements: elements, PosInfo: p.tokToPos(bracketToken)}
 }
 
 func (p *Parser) property(lhs ast.Expression) ast.Expression {
+    dotToken := p.peek()
     if !p.match(token.DOT) {
         p.pushNewError("expected property expression", p.peek())
         return nil
@@ -333,12 +345,13 @@ func (p *Parser) property(lhs ast.Expression) ast.Expression {
         return nil
     }
     name := p.advance()
-    index := &ast.StringLiteralExpression{Value: name.Literal}
+    index := &ast.StringLiteralExpression{Value: name.Literal, PosInfo: p.tokToPos(name)}
 
-    return &ast.IndexExpression{Left: lhs, Index: index}
+    return &ast.IndexExpression{Left: lhs, Index: index, PosInfo: p.tokToPos(dotToken)}
 }
 
 func (p *Parser) index(lhs ast.Expression) ast.Expression {
+    bracketToken := p.peek()
     if !p.match(token.LBRACKET) {
         p.pushNewError("expected index expression", p.peek())
         return nil
@@ -353,7 +366,7 @@ func (p *Parser) index(lhs ast.Expression) ast.Expression {
         p.pushNewError("expected ]", p.peek())
         return nil
     }
-    return &ast.IndexExpression{Left: lhs, Index: index}
+    return &ast.IndexExpression{Left: lhs, Index: index, PosInfo: p.tokToPos(bracketToken)}
 }
 
 func isUnaryOperator(tok token.Token) bool {

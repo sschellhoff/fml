@@ -2,10 +2,22 @@ package ast
 
 import (
     "bytes"
+    "fmt"
 )
+
+type PositionalInfo struct {
+    Line int
+    Column int
+    Path string
+}
+
+func (p PositionalInfo) String() string {
+    return fmt.Sprintf("%s: [line: %d, column: %d]", p.Path, p.Line, p.Column)
+}
 
 type Node interface {
     String() string
+    Position() PositionalInfo
 }
 
 type Statement interface {
@@ -22,6 +34,7 @@ type Expression interface {
 type Program struct {
     Statements []Statement
     Path string
+    PosInfo PositionalInfo
 }
 
 func (p *Program) String() string {
@@ -32,3 +45,6 @@ func (p *Program) String() string {
     return out.String()
 }
 
+func (p *Program) Position() PositionalInfo {
+    return p.PosInfo
+}

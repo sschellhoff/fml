@@ -53,7 +53,7 @@ func Start(in io.Reader, out io.Writer) {
 
 func parse(code string) (*ast.Program, []error) {
     s := scanner.New(code)
-    p := parser.New(s)
+    p := parser.New(s, "repl")
     return  p.Parse()
 }
 

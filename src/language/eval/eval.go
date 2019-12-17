@@ -27,7 +27,7 @@ func Eval(node ast.Node, env *object.Environment, modules map[string]*object.Mod
         if MODULEPATH == "" {
             cwd, err := os.Getwd()
             if err != nil {
-                return makeError(err.Error())
+                return makeError(node.Position(), err.Error())
             }
             MODULEPATH = cwd
         }
@@ -38,7 +38,7 @@ func Eval(node ast.Node, env *object.Environment, modules map[string]*object.Mod
         // don't load module if already loaded
         if foundModule, ok := modules[path]; ok {
             if !env.AddConst(name, foundModule) {
-                return makeError("Cannot define module with this name, it is already taken")
+                return makeError(node.Position(), "Cannot define module with this name, it is already taken")
             }
             return NULL
         }
@@ -53,7 +53,7 @@ func Eval(node ast.Node, env *object.Environment, modules map[string]*object.Mod
         }
         module := &object.Module{Env: object.NewEnvironment(), Path: path}
         if !env.AddConst(name, module) {
-            return makeError("Cannot define module with this name, it is already taken")
+            return makeError(node.Position(), "Cannot define module with this name, it is already taken")
         }
         moduleEnv := module.Env
         modules[path] = module
@@ -77,7 +77,12 @@ func Eval(node ast.Node, env *object.Environment, modules map[string]*object.Mod
             return args[0]
         }
 
-        return applyFunction(function, args, modules)
+        result := applyFunction(function, args, modules, node.Position())
+        if isError(result) {
+            resultingError := result.(*object.Error)
+            return addToStacktrace(node.Position(), resultingError)
+        }
+        return result
 
     case *ast.TryCatchStatement:
         try := Eval(node.Try, env, modules)
@@ -171,7 +176,7 @@ func Eval(node ast.Node, env *object.Environment, modules map[string]*object.Mod
                 }
             }
         default:
-            return makeError("Can only range over array or hash, got %s", theRange.Type())
+            return makeError(node.Position(), "Can only range over array or hash, got %s", theRange.Type())
         }
         return NULL
 
@@ -220,7 +225,7 @@ func Eval(node ast.Node, env *object.Environment, modules map[string]*object.Mod
                 }
             }
         default:
-            return makeError("Can only range over array or hash, got %s", theRange.Type())
+            return makeError(node.Position(), "Can only range over array or hash, got %s", theRange.Type())
         }
         return NULL
 
@@ -231,7 +236,7 @@ func Eval(node ast.Node, env *object.Environment, modules map[string]*object.Mod
         }
 
         if !env.Add(node.Name, value) {
-            return makeError("Cannot define variable")
+            return makeError(node.Position(), "Cannot redefine variable %s", node.Name)
         }
 
     case *ast.ConstStatement:
@@ -241,7 +246,7 @@ func Eval(node ast.Node, env *object.Environment, modules map[string]*object.Mod
         }
 
         if !env.AddConst(node.Name, value) {
-            return makeError("Cannot define constant")
+            return makeError(node.Position(), "Cannot redefine constant %s", node.Name)
         }
 
     case *ast.ExpressionStatement:
@@ -260,7 +265,7 @@ func Eval(node ast.Node, env *object.Environment, modules map[string]*object.Mod
         return &object.String{Value: node.Value}
 
     case *ast.IdentifierExpression:
-        return evalIdentifier(node.Name, env)
+        return evalIdentifier(node.Name, env, node.Position())
 
     case *ast.NullLiteralExpression:
         return NULL
@@ -285,7 +290,7 @@ func Eval(node ast.Node, env *object.Environment, modules map[string]*object.Mod
         if isError(idx) {
             return idx
         }
-        return evalIndex(lhs, idx)
+        return evalIndex(lhs, idx, node.Position())
 
     case *ast.BreakStatement:
         return &object.Break{}
@@ -309,23 +314,23 @@ func Eval(node ast.Node, env *object.Environment, modules map[string]*object.Mod
     case *ast.ConditionalExpression:
         return evalConditional(node, env, modules)
     default:
-        return makeError("Unknown expression of type: %T", node)
+        return makeError(node.Position(), "Unknown expression of type: %T", node)
     }
     return NULL
 }
 
-func evalIndex(lhs object.Object, index object.Object) object.Object {
+func evalIndex(lhs object.Object, index object.Object, posInfo ast.PositionalInfo) object.Object {
     switch lhs := lhs.(type) {
     case *object.Array:
-        return evalArray(lhs, index)
+        return evalArray(lhs, index, posInfo)
     case *object.Hash:
-        return evalHash(lhs, index)
+        return evalHash(lhs, index, posInfo)
     case *object.Module:
-        return evalModule(lhs, index)
+        return evalModule(lhs, index, posInfo)
     case *object.String:
-        return evalStringIndex(lhs, index)
+        return evalStringIndex(lhs, index, posInfo)
     default:
-        return makeError("Cannot index on %s", lhs.Type())
+        return makeError(posInfo, "Cannot index on %s", lhs.Type())
     }
 }
 
@@ -340,7 +345,7 @@ func evalHashLiteral(node *ast.HashLiteral, env *object.Environment, modules map
 
         hashKey, ok := key.(object.Hashable)
         if !ok {
-            return makeError("key is not hashable: %s", key.Type())
+            return makeError(node.Position(), "key is not hashable: %s", key.Type())
         }
 
         value := Eval(valueNode, env, modules)
@@ -354,10 +359,10 @@ func evalHashLiteral(node *ast.HashLiteral, env *object.Environment, modules map
     return &object.Hash{Pairs: pairs}
 }
 
-func evalHash(lhs *object.Hash, index object.Object) object.Object {
+func evalHash(lhs *object.Hash, index object.Object, posInfo ast.PositionalInfo) object.Object {
     key, ok := index.(object.Hashable)
     if !ok {
-        return makeError("unusable as hashkey: %s", index.Type())
+        return makeError(posInfo, "unusable as hashkey: %s", index.Type())
     }
 
     pair, ok := lhs.Pairs[key.HashKey()]
@@ -367,10 +372,10 @@ func evalHash(lhs *object.Hash, index object.Object) object.Object {
     return pair.Value
 }
 
-func evalArray(lhs *object.Array, index object.Object) object.Object {
+func evalArray(lhs *object.Array, index object.Object, posInfo ast.PositionalInfo) object.Object {
     idx, ok := index.(*object.Integer)
     if !ok {
-        return makeError("Can only use integer as index on array, got %s", index.Type())
+        return makeError(posInfo, "Can only use integer as index on array, got %s", index.Type())
     }
     if idx.Value < 0 || idx.Value >= int64(len(lhs.Elements)) {
         return NULL
@@ -378,24 +383,24 @@ func evalArray(lhs *object.Array, index object.Object) object.Object {
     return lhs.Elements[idx.Value]
 }
 
-func evalStringIndex(lhs *object.String, index object.Object) object.Object {
+func evalStringIndex(lhs *object.String, index object.Object, posInfo ast.PositionalInfo) object.Object {
     idx, ok := index.(*object.Integer)
     if !ok {
-        return makeError("Can only use integer as index on string, got %s", index.Type())
+        return makeError(posInfo, "Can only use integer as index on string, got %s", index.Type())
     }
     return builtins["substring"].Function(lhs, idx, &object.Integer{Value: idx.Value+1})
 }
 
-func evalModule(lhs *object.Module, index object.Object) object.Object {
+func evalModule(lhs *object.Module, index object.Object, posInfo ast.PositionalInfo) object.Object {
     name := index.String()
     result, ok := lhs.Env.Get(name)
     if !ok {
-        return makeError("Cannot find %s in module", name)
+        return makeError(posInfo, "Cannot find %s in module", name)
     }
     return result
 }
 
-func evalIdentifier(name string, env *object.Environment) object.Object {
+func evalIdentifier(name string, env *object.Environment, posInfo ast.PositionalInfo) object.Object {
     result, ok := env.Get(name)
     if ok {
         return result
@@ -404,7 +409,7 @@ func evalIdentifier(name string, env *object.Environment) object.Object {
     if ok {
         return builtin
     }
-    return makeError("unknown identifier: %s", name)
+    return makeError(posInfo, "unknown identifier: %s", name)
 }
 
 func evalProgram(program *ast.Program, env *object.Environment, modules map[string]*object.Module) object.Object {
@@ -436,11 +441,11 @@ func evalBlockStatement(block *ast.BlockStatement, env *object.Environment, modu
     return result
 }
 
-func applyFunction(fn object.Object, args []object.Object, modules map[string]*object.Module) object.Object {
+func applyFunction(fn object.Object, args []object.Object, modules map[string]*object.Module, posInfo ast.PositionalInfo) object.Object {
     function, ok := fn.(*object.Function)
     if ok {
         if len(args) != len(function.Parameters) {
-            return makeError("Wrong number of arguiments in function call! Wanted %d, got %d", len(function.Parameters), len(args))
+            return makeError(posInfo, "Wrong number of arguiments in function call! Wanted %d, got %d", len(function.Parameters), len(args))
         }
         extendedEnv := extendFunctionEnv(function, args)
         evaluated := Eval(function.Body, extendedEnv, modules)
@@ -449,10 +454,15 @@ func applyFunction(fn object.Object, args []object.Object, modules map[string]*o
 
     builtin, ok := fn.(*object.Builtin)
     if ok {
-        return builtin.Function(args...)
+        result := builtin.Function(args...)
+        if isError(result) {
+            resultingError := result.(*object.Error)
+            return addToStacktrace(posInfo, resultingError)
+        }
+        return result
     }
 
-    return makeError("cannot call a non function %T", fn)
+    return makeError(posInfo, "cannot call a non function %T", fn)
 }
 
 func evalExpressions(exprs []ast.Expression, env *object.Environment, modules map[string]*object.Module) []object.Object {
@@ -502,7 +512,7 @@ func evalUnary(expr *ast.UnaryExpression, env *object.Environment, modules map[s
         } else if op.Type == token.SUB {
             return &object.Integer{Value: -typedValue.Value}
         } else {
-            return makeError("unsupported unary expression")
+            return makeError(expr.Position(), "unsupported unary expression")
         }
     case *object.Float:
         if op.Type == token.ADD {
@@ -510,10 +520,10 @@ func evalUnary(expr *ast.UnaryExpression, env *object.Environment, modules map[s
         } else if op.Type == token.SUB {
             return &object.Float{Value: -typedValue.Value}
         } else {
-            return makeError("unsupported unary expression")
+            return makeError(expr.Position(), "unsupported unary expression")
         }
     default:
-        return makeError("unsupported unary right hand side type")
+        return makeError(expr.Position(), "unsupported unary right hand side type")
     }
 
 }
@@ -528,7 +538,7 @@ func evalAssign(left ast.Expression, right ast.Expression, env *object.Environme
         }
         ok := env.Set(name, rhs)
         if !ok {
-            return makeError("cannot assign %s", name)
+            return makeError(left.Position(), "cannot assign %s", name)
         }
         return rhs
     case *ast.IndexExpression:
@@ -538,7 +548,7 @@ func evalAssign(left ast.Expression, right ast.Expression, env *object.Environme
         }
         return evalIndexSet(lhs, rhs, env, modules)
     default:
-        return makeError("can only assign to variables")
+        return makeError(left.Position(), "can only assign to variables")
     }
 }
 
@@ -550,50 +560,50 @@ func evalIndexSet(expr *ast.IndexExpression, value object.Object, env *object.En
         if isError(index) {
             return index
         }
-        return evalArrayIndexSet(lhs, index, value)
+        return evalArrayIndexSet(lhs, index, value, expr.Position())
     case *object.Hash:
         index := Eval(expr.Index, env, modules)
         if isError(index) {
             return index
         }
-        return evalHashIndexSet(lhs, index, value)
+        return evalHashIndexSet(lhs, index, value, expr.Position())
     case *object.Module:
         index := Eval(expr.Index, env, modules)
         if isError(index) {
             return index
         }
-        return evalModuleIndexSet(lhs, index, value)
+        return evalModuleIndexSet(lhs, index, value, expr.Position())
     default:
-        return makeError("cannot use index expression on %s", lhs.Type())
+        return makeError(expr.Position(), "cannot use index expression on %s", lhs.Type())
     }
 }
 
-func evalArrayIndexSet(arr *object.Array, index object.Object, value object.Object) object.Object {
+func evalArrayIndexSet(arr *object.Array, index object.Object, value object.Object, posInfo ast.PositionalInfo) object.Object {
     idx, ok := index.(*object.Integer)
     if !ok {
-        return makeError("can only use integer as array index but got %s", index.Type())
+        return makeError(posInfo, "can only use integer as array index but got %s", index.Type())
     }
     if idx.Value < 0 || idx.Value >= int64(len(arr.Elements)) {
-        return makeError("index out of bounds: %d", idx.Value)
+        return makeError(posInfo, "index out of bounds: %d", idx.Value)
     }
     arr.Elements[idx.Value] = value
     return value
 }
 
-func evalHashIndexSet(hash *object.Hash, index object.Object, value object.Object) object.Object {
+func evalHashIndexSet(hash *object.Hash, index object.Object, value object.Object, posInfo ast.PositionalInfo) object.Object {
     key, ok := index.(object.Hashable)
     if !ok {
-        return makeError("cannot use %s as hash key", index.Type())
+        return makeError(posInfo, "cannot use %s as hash key", index.Type())
     }
     hash.Pairs[key.HashKey()] = object.HashPair{Key: index, Value: value}
     return value
 }
 
-func evalModuleIndexSet(module *object.Module, index object.Object, value object.Object) object.Object {
+func evalModuleIndexSet(module *object.Module, index object.Object, value object.Object, posInfo ast.PositionalInfo) object.Object {
     name := index.String()
     ok := module.Env.Set(name, value)
     if !ok {
-        return makeError("")
+        return makeError(posInfo, "Cannot set value in module")
     }
     return value
 }
@@ -658,17 +668,17 @@ func evalInfix(expr *ast.InfixExpression, env *object.Environment, modules map[s
         if lhs.Type() == object.INTEGER_OBJECT {
             lhsIo, _ := lhs.(*object.Integer)
             rhsIo, _ := rhs.(*object.Integer)
-            return evalIntegerInfix(expr.Op, lhsIo, rhsIo)
+            return evalIntegerInfix(expr.Op, lhsIo, rhsIo, expr.Position())
         }
         if lhs.Type() == object.FLOAT_OBJECT {
             lhsFo := lhs.(*object.Float)
             rhsFo := rhs.(*object.Float)
-            return evalFloatInfix(expr.Op, lhsFo, rhsFo)
+            return evalFloatInfix(expr.Op, lhsFo, rhsFo, expr.Position())
         }
         if lhs.Type() == object.STRING_OBJECT {
             lhsSo, _ := lhs.(*object.String)
             rhsSo, _ := rhs.(*object.String)
-            return evalStringInfix(expr.Op, lhsSo, rhsSo)
+            return evalStringInfix(expr.Op, lhsSo, rhsSo, expr.Position())
         }
         switch expr.Op.Type {
         case token.EQ:
@@ -676,7 +686,7 @@ func evalInfix(expr *ast.InfixExpression, env *object.Environment, modules map[s
         case token.NEQ:
             return boolToBoolean(lhs != rhs)
         }
-        return makeError("unsupported infix expression")
+        return makeError(expr.Position(), "unsupported infix expression")
     }
     switch expr.Op.Type {
     case token.EQ:
@@ -685,10 +695,10 @@ func evalInfix(expr *ast.InfixExpression, env *object.Environment, modules map[s
         return boolToBoolean(lhs != rhs)
     }
 
-    return makeError("operands on infix expressions need to be of the same type")
+    return makeError(expr.Position(), "operands on infix expressions need to be of the same type")
 }
 
-func evalStringInfix(op token.Token, lhs *object.String, rhs *object.String) object.Object {
+func evalStringInfix(op token.Token, lhs *object.String, rhs *object.String, posInfo ast.PositionalInfo) object.Object {
     switch op.Type {
     case token.ADD:
         return &object.String{Value: lhs.Value + rhs.Value}
@@ -697,10 +707,10 @@ func evalStringInfix(op token.Token, lhs *object.String, rhs *object.String) obj
     case token.NEQ:
         return boolToBoolean(lhs.Value != rhs.Value)
     }
-    return makeError("unsupported infix operator on strings")
+    return makeError(posInfo, "unsupported infix operator on strings")
 }
 
-func evalIntegerInfix(op token.Token, lhs *object.Integer, rhs *object.Integer) object.Object {
+func evalIntegerInfix(op token.Token, lhs *object.Integer, rhs *object.Integer, posInfo ast.PositionalInfo) object.Object {
     switch op.Type {
     case token.ADD:
         return &object.Integer{Value: lhs.Value + rhs.Value}
@@ -737,11 +747,11 @@ func evalIntegerInfix(op token.Token, lhs *object.Integer, rhs *object.Integer) 
         }
         return &object.Array{Elements: elements}
     default:
-        return makeError("unsupported infix operator on integers")
+        return makeError(posInfo, "unsupported infix operator on integers")
     }
 }
 
-func evalFloatInfix(op token.Token, lhs *object.Float, rhs *object.Float) object.Object {
+func evalFloatInfix(op token.Token, lhs *object.Float, rhs *object.Float, posInfo ast.PositionalInfo) object.Object {
     switch op.Type {
     case token.ADD:
         return &object.Float{Value: lhs.Value + rhs.Value}
@@ -764,7 +774,7 @@ func evalFloatInfix(op token.Token, lhs *object.Float, rhs *object.Float) object
     case token.NEQ:
         return boolToBoolean(lhs.Value != rhs.Value)
     default:
-        return makeError("unsupported infix operator on floats")
+        return makeError(posInfo, "unsupported infix operator on floats")
     }
 }
 
@@ -836,8 +846,17 @@ func unwrapReturnValue(obj object.Object) object.Object {
     return obj
 }
 
-func makeError(format string, a ...interface{}) *object.Error {
-    return &object.Error{Message: fmt.Sprintf(format, a...)}
+func makeError(position ast.PositionalInfo, format string, a ...interface{}) *object.Error {
+    return &object.Error{Message: fmt.Sprintf(format, a...), StackTrace: []ast.PositionalInfo{position}}
+}
+
+func makeErrorWithEmptyStacktrace(format string, a ...interface{}) *object.Error {
+    return &object.Error{Message: fmt.Sprintf(format, a...), StackTrace: []ast.PositionalInfo{}}
+}
+
+func addToStacktrace(posInfo ast.PositionalInfo, err *object.Error) *object.Error {
+    err.StackTrace = append(err.StackTrace, posInfo)
+    return err
 }
 
 func makeParserErrors(errs []error) *object.ParserErrors {

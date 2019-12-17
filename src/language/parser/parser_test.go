@@ -119,7 +119,7 @@ func TestBreakAndContinueStatements(t *testing.T) {
 
     for _, tt := range tests {
         s := scanner.New(tt.input)
-        p := New(s)
+        p := New(s, "test")
         program, err := p.Parse()
         hadError := len(err) != 0
         if hadError != tt.expectError {
@@ -773,7 +773,7 @@ func parseProgram(t *testing.T, input string) *ast.Program {
     t.Helper()
 
     s := scanner.New(input)
-    p := New(s)
+    p := New(s, "test")
     program, err := p.Parse()
     
     handleParserErrors(t, err)

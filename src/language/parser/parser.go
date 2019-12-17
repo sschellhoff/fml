@@ -16,11 +16,12 @@ type Parser struct {
     errors []error
     numberOfEnclosingFunctions int
     isInLoopStack []bool
+    filePath string
 }
 
-func New(scanner *scanner.Scanner) *Parser {
+func New(scanner *scanner.Scanner, filePath string) *Parser {
     bufferSize := 2
-    p := &Parser{scanner: scanner, tokenBuffer: make([]token.Token, bufferSize), errors: make([]error, 0), numberOfEnclosingFunctions: 0, isInLoopStack: []bool{false}}
+    p := &Parser{scanner: scanner, tokenBuffer: make([]token.Token, bufferSize), errors: make([]error, 0), numberOfEnclosingFunctions: 0, isInLoopStack: []bool{false}, filePath: filePath}
 
     p.prefixParseFunctions = make(map[token.TokenType]prefixParseFunction)
     p.registerPrefixFunctions()
@@ -35,7 +36,7 @@ func New(scanner *scanner.Scanner) *Parser {
 }
 
 func (p *Parser) Parse() (*ast.Program, []error) {
-    result := ast.Program{Statements: make([]ast.Statement, 0)}
+    result := ast.Program{Statements: make([]ast.Statement, 0), PosInfo: ast.PositionalInfo{Line: 0, Column: 0, Path: p.filePath}}
 
     for !p.HadErrors(){
         stmt := p.parseModuleLevelStmt()
@@ -145,4 +146,8 @@ func (p *Parser) pushLoopStack(enterLoop bool) {
 func (p *Parser) popLoopStack() {
     n := len(p.isInLoopStack) - 1
     p.isInLoopStack = p.isInLoopStack[:n]
+}
+
+func (p *Parser) tokToPos(tok token.Token) ast.PositionalInfo {
+    return ast.PositionalInfo{Line: tok.Line, Column: tok.Column, Path: p.filePath}
 }

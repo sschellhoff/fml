@@ -17,7 +17,7 @@ func Build(path string) (*ast.Program, []error) {
     if err != nil {
         return nil, []error{err}
     }
-    return parse(code)
+    return parse(code, path)
 }
 
 func readFile(path string) (string, error) {
@@ -28,9 +28,9 @@ func readFile(path string) (string, error) {
     return string(content), nil
 }
 
-func parse(code string) (*ast.Program, []error) {
+func parse(code string, path string) (*ast.Program, []error) {
     s := scanner.New(code)
-    p := parser.New(s)
+    p := parser.New(s, path)
     return  p.Parse()
 }
 

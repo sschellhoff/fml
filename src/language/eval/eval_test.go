@@ -387,7 +387,7 @@ func TestBuiltin(t *testing.T) {
         let a = myFunc(0);
         a;
         let b = myFunc(1);
-        `, makeError("param greater than 0")},
+        `, makeErrorWithEmptyStacktrace("param greater than 0")},
     }
 
     for _, tt := range tests {
@@ -848,7 +848,7 @@ func evaluate(t *testing.T, input string) object.Object {
     t.Helper()
 
     s := scanner.New(input)
-    p := parser.New(s)
+    p := parser.New(s, "test")
     program, errors := p.Parse()
     handleParserErrors(t, errors)
 

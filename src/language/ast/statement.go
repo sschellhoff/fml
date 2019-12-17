@@ -6,6 +6,7 @@ import (
 
 type ExpressionStatement struct {
     Expr Expression
+    PosInfo PositionalInfo
 }
 
 func (e *ExpressionStatement) statementNode() {}
@@ -17,11 +18,16 @@ func (e *ExpressionStatement) String() string {
     return out.String()
 }
 
+func (e *ExpressionStatement) Position() PositionalInfo {
+    return e.PosInfo
+}
+
 
 type IfStatement struct {
     Cond Expression
     Then *BlockStatement
     Else *BlockStatement
+    PosInfo PositionalInfo
 }
 
 func (i *IfStatement) statementNode() {}
@@ -41,11 +47,16 @@ func (i *IfStatement) String() string {
     return out.String()
 }
 
+func (i *IfStatement) Position() PositionalInfo {
+    return i.PosInfo
+}
+
 
 type TryCatchStatement struct {
     Try *BlockStatement
     Info string
     Catch *BlockStatement
+    PosInfo PositionalInfo
 }
 
 func (t *TryCatchStatement) statementNode() {}
@@ -63,10 +74,15 @@ func (t *TryCatchStatement) String() string {
     return out.String()
 }
 
+func (t *TryCatchStatement) Position() PositionalInfo {
+    return t.PosInfo
+}
+
 
 type LetStatement struct {
     Name string
     Initializer Expression
+    PosInfo PositionalInfo
 }
 
 func (l *LetStatement) statementNode() {}
@@ -83,10 +99,15 @@ func (l *LetStatement) String() string {
     return out.String()
 }
 
+func (l *LetStatement) Position() PositionalInfo {
+    return l.PosInfo
+}
+
 
 type ConstStatement struct {
     Name string
     Initializer Expression
+    PosInfo PositionalInfo
 }
 
 func (c *ConstStatement) statementNode() {}
@@ -103,9 +124,14 @@ func (c *ConstStatement) String() string {
     return out.String()
 }
 
+func (c *ConstStatement) Position() PositionalInfo {
+    return c.PosInfo
+}
+
 
 type BlockStatement struct {
     Statements []Statement
+    PosInfo PositionalInfo
 }
 
 func (b *BlockStatement) statementNode() {}
@@ -123,9 +149,14 @@ func (b *BlockStatement) String() string {
     return out.String()
 }
 
+func (b *BlockStatement) Position() PositionalInfo {
+    return b.PosInfo
+}
+
 
 type ReturnStatement struct {
     Result Expression
+    PosInfo PositionalInfo
 }
 
 func (r *ReturnStatement) statementNode() {}
@@ -140,8 +171,13 @@ func (r *ReturnStatement) String() string {
     return out.String()
 }
 
+func (r *ReturnStatement) Position() PositionalInfo {
+    return r.PosInfo
+}
+
 
 type BreakStatement struct {
+    PosInfo PositionalInfo
 }
 
 func (b *BreakStatement) statementNode() {}
@@ -150,8 +186,13 @@ func (b *BreakStatement) String() string {
     return "break;"
 }
 
+func (b *BreakStatement) Position() PositionalInfo {
+    return b.PosInfo
+}
+
 
 type ContinueStatement struct {
+    PosInfo PositionalInfo
 }
 
 func (c *ContinueStatement) statementNode() {}
@@ -160,10 +201,15 @@ func (c *ContinueStatement) String() string {
     return "continue;"
 }
 
+func (c *ContinueStatement) Position() PositionalInfo {
+    return c.PosInfo
+}
+
 
 type WhileStatement struct {
     Head Expression
     Body *BlockStatement
+    PosInfo PositionalInfo
 }
 
 func (w *WhileStatement) statementNode() {}
@@ -178,11 +224,16 @@ func (w *WhileStatement) String() string {
     return out.String()
 }
 
+func (w *WhileStatement) Position() PositionalInfo {
+    return w.PosInfo
+}
+
 
 type RangeLoopStatement struct {
     Name string
     RangeExpr Expression
     Body *BlockStatement
+    PosInfo PositionalInfo
 }
 
 func (r *RangeLoopStatement) statementNode() {}
@@ -199,12 +250,17 @@ func (r *RangeLoopStatement) String() string {
     return out.String()
 }
 
+func (r *RangeLoopStatement) Position() PositionalInfo {
+    return r.PosInfo
+}
+
 
 type KVRangeLoopStatement struct {
     IndexName string
     ElementName string
     RangeExpr Expression
     Body *BlockStatement
+    PosInfo PositionalInfo
 }
 
 func (k *KVRangeLoopStatement) statementNode() {}
@@ -223,10 +279,15 @@ func (k *KVRangeLoopStatement) String() string {
     return out.String()
 }
 
+func (k *KVRangeLoopStatement) Position() PositionalInfo {
+    return k.PosInfo
+}
+
 
 type ImportStatement struct {
     Path string
     Name string
+    PosInfo PositionalInfo
 }
 
 func (i *ImportStatement) statementNode() {}
@@ -241,3 +302,8 @@ func(i *ImportStatement) String() string {
 
     return out.String()
 }
+
+func (i *ImportStatement) Position() PositionalInfo {
+    return i.PosInfo
+}
+

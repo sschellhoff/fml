@@ -161,6 +161,7 @@ func (c *Continue) String() string {
 
 type Error struct {
     Message string
+    StackTrace []ast.PositionalInfo
 }
 
 func (e *Error) Type() ObjectType {
@@ -168,7 +169,17 @@ func (e *Error) Type() ObjectType {
 }
 
 func (e *Error) String() string {
-    return "ERROR: " + e.Message
+    var out bytes.Buffer
+    out.WriteString("ERROR\n")
+    for i := range e.StackTrace {
+        p := e.StackTrace[len(e.StackTrace) - 1 - i]
+        out.WriteString("\t")
+        out.WriteString(p.String())
+        out.WriteString("\n")
+    }
+    out.WriteString("Message: ")
+    out.WriteString(e.Message)
+    return out.String()
 }
 
 

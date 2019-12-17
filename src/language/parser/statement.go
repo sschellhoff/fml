@@ -39,6 +39,7 @@ func (p *Parser) parseStmt() ast.Statement {
 }
 
 func (p *Parser) parseLet() *ast.LetStatement {
+    letToken := p.peek()
     if !p.match(token.LET) {
         p.pushNewError("Expected let statement", p.peek())
     }
@@ -61,10 +62,11 @@ func (p *Parser) parseLet() *ast.LetStatement {
 
     p.match(token.SEMICOLON)
 
-    return &ast.LetStatement{Name: name.Literal, Initializer: expr}
+    return &ast.LetStatement{Name: name.Literal, Initializer: expr, PosInfo: p.tokToPos(letToken)}
 }
 
 func (p *Parser) parseConst() *ast.ConstStatement {
+    constToken := p.peek()
     if !p.match(token.CONST) {
         p.pushNewError("Expected const statement", p.peek())
     }
@@ -87,10 +89,11 @@ func (p *Parser) parseConst() *ast.ConstStatement {
 
     p.match(token.SEMICOLON)
 
-    return &ast.ConstStatement{Name: name.Literal, Initializer: expr}
+    return &ast.ConstStatement{Name: name.Literal, Initializer: expr, PosInfo: p.tokToPos(constToken)}
 }
 
 func (p *Parser) parseIf() *ast.IfStatement {
+    ifToken := p.peek()
     if !p.match(token.IF) {
         p.pushNewError("Expected if", p.peek())
         return nil
@@ -113,22 +116,23 @@ func (p *Parser) parseIf() *ast.IfStatement {
                 return nil
             }
             elseStmts := []ast.Statement{elseIf}
-            elseBlock := &ast.BlockStatement{Statements: elseStmts}
-            return &ast.IfStatement{Cond: cond, Then: thenBlock, Else: elseBlock}
+            elseBlock := &ast.BlockStatement{Statements: elseStmts, PosInfo: elseIf.PosInfo}
+            return &ast.IfStatement{Cond: cond, Then: thenBlock, Else: elseBlock, PosInfo: p.tokToPos(ifToken)}
         }
         elseBlock := p.block()
         if elseBlock == nil {
             return nil
         }
-        return &ast.IfStatement{Cond: cond, Then: thenBlock, Else: elseBlock}
+        return &ast.IfStatement{Cond: cond, Then: thenBlock, Else: elseBlock, PosInfo: p.tokToPos(ifToken)}
     }
 
-    return &ast.IfStatement{Cond: cond, Then: thenBlock, Else: &ast.BlockStatement{Statements: []ast.Statement{}}}
+    return &ast.IfStatement{Cond: cond, Then: thenBlock, Else: &ast.BlockStatement{Statements: []ast.Statement{}}, PosInfo: p.tokToPos(ifToken)}
 }
 
 func (p *Parser) parseLoop() ast.Statement {
     p.enterLoop()
     defer p.exitLoop()
+    loopToken := p.peek()
     if !p.match(token.LOOP) {
         p.pushNewError("expected loop", p.peek())
         return nil
@@ -157,7 +161,7 @@ func (p *Parser) parseLoop() ast.Statement {
             return nil
         }
 
-        return &ast.RangeLoopStatement{Name: name.Literal, RangeExpr: rangeExpr, Body: block}
+        return &ast.RangeLoopStatement{Name: name.Literal, RangeExpr: rangeExpr, Body: block, PosInfo: p.tokToPos(loopToken)}
     } else if p.are(token.IDENTIFIER, token.COMMA) {
         idxName := p.advance()
         p.advance()
@@ -180,7 +184,7 @@ func (p *Parser) parseLoop() ast.Statement {
             return nil
         }
 
-        return &ast.KVRangeLoopStatement{IndexName: idxName.Literal, ElementName: elementName.Literal, RangeExpr: rangeExpr, Body: block}
+        return &ast.KVRangeLoopStatement{IndexName: idxName.Literal, ElementName: elementName.Literal, RangeExpr: rangeExpr, Body: block, PosInfo: p.tokToPos(loopToken)}
     } else {
         head := p.expression()
 
@@ -193,11 +197,12 @@ func (p *Parser) parseLoop() ast.Statement {
             return nil
         }
 
-        return &ast.WhileStatement{Head: head, Body: block}
+        return &ast.WhileStatement{Head: head, Body: block, PosInfo: p.tokToPos(loopToken)}
     }
 }
 
 func (p *Parser) parseReturn() *ast.ReturnStatement {
+    returnToken := p.peek()
     if !p.match(token.RETURN) {
         p.pushNewError("expected return statement", p.peek())
         return nil
@@ -209,13 +214,13 @@ func (p *Parser) parseReturn() *ast.ReturnStatement {
     }
 
     if p.match(token.SEMICOLON) {
-        return &ast.ReturnStatement{Result: &ast.NullLiteralExpression{}}
+        return &ast.ReturnStatement{Result: &ast.NullLiteralExpression{PosInfo: p.tokToPos(returnToken)}, PosInfo: p.tokToPos(returnToken)}
     }
     result := p.expression()
 
     p.match(token.SEMICOLON)
 
-    return &ast.ReturnStatement{Result: result}
+    return &ast.ReturnStatement{Result: result, PosInfo: p.tokToPos(returnToken)}
 }
 
 func (p *Parser) parseBreak() *ast.BreakStatement {
@@ -224,6 +229,7 @@ func (p *Parser) parseBreak() *ast.BreakStatement {
         return nil
     }
 
+    breakToken := p.peek()
     if !p.match(token.BREAK) {
         p.pushNewError("Expected break statement", p.peek())
         return nil
@@ -231,7 +237,7 @@ func (p *Parser) parseBreak() *ast.BreakStatement {
 
     p.match(token.SEMICOLON)
 
-    return &ast.BreakStatement{}
+    return &ast.BreakStatement{PosInfo: p.tokToPos(breakToken)}
 }
 
 func (p *Parser) parseContinue() *ast.ContinueStatement {
@@ -240,6 +246,7 @@ func (p *Parser) parseContinue() *ast.ContinueStatement {
         return nil
     }
 
+    continueToken := p.peek()
     if !p.match(token.CONTINUE) {
         p.pushNewError("Expected continue statement", p.peek())
         return nil
@@ -247,10 +254,11 @@ func (p *Parser) parseContinue() *ast.ContinueStatement {
 
     p.match(token.SEMICOLON)
 
-    return &ast.ContinueStatement{}
+    return &ast.ContinueStatement{PosInfo: p.tokToPos(continueToken)}
 }
 
 func (p *Parser) parseTryCatch() *ast.TryCatchStatement {
+    tryToken := p.peek()
     if !p.match(token.TRY) {
         p.pushNewError("Expected try", p.peek())
         return nil
@@ -271,10 +279,11 @@ func (p *Parser) parseTryCatch() *ast.TryCatchStatement {
     if catchBlock == nil {
         return nil
     }
-    return &ast.TryCatchStatement{Try: tryBlock, Catch: catchBlock, Info: identifier.Literal}
+    return &ast.TryCatchStatement{Try: tryBlock, Catch: catchBlock, Info: identifier.Literal, PosInfo: p.tokToPos(tryToken)}
 }
 
 func (p *Parser) block() *ast.BlockStatement {
+    braceToken := p.peek()
     if !p.match(token.LBRACE) {
         p.pushNewError("Expected BlockStatement", p.peek())
         return nil
@@ -302,7 +311,7 @@ func (p *Parser) block() *ast.BlockStatement {
         p.pushNewError("Expected }", p.peek())
         return nil
     }
-    return &ast.BlockStatement{Statements: stmts}
+    return &ast.BlockStatement{Statements: stmts, PosInfo: p.tokToPos(braceToken)}
 }
 
 func (p *Parser) parseExprStmt() *ast.ExpressionStatement {
@@ -312,10 +321,11 @@ func (p *Parser) parseExprStmt() *ast.ExpressionStatement {
         return nil
     }
     p.match(token.SEMICOLON)
-    return &ast.ExpressionStatement{Expr: expr}
+    return &ast.ExpressionStatement{Expr: expr, PosInfo: expr.Position()}
 }
 
 func (p *Parser) parseImport() *ast.ImportStatement {
+    importToken := p.peek()
     if !p.match(token.IMPORT) {
         p.pushNewError("expected import", p.peek())
         return nil
@@ -340,5 +350,5 @@ func (p *Parser) parseImport() *ast.ImportStatement {
 
     p.match(token.SEMICOLON)
 
-    return &ast.ImportStatement{Path: path.Literal, Name: name.Literal}
+    return &ast.ImportStatement{Path: path.Literal, Name: name.Literal, PosInfo: p.tokToPos(importToken)}
 }

@@ -7,13 +7,14 @@ import (
     "bufio"
     "os"
     "language/object"
+    "language/ast"
 )
 
 var builtins = map[string]*object.Builtin{
     "len": &object.Builtin{
         Function: func(args ...object.Object) object.Object {
             if len(args) != 1 {
-                return makeError("wrong number of arguments, want 1, got %d", len(args))
+                return makeBuiltinError("wrong number of arguments, want 1, got %d", len(args))
             }
 
             arg := args[0]
@@ -24,50 +25,50 @@ var builtins = map[string]*object.Builtin{
             case *object.Array:
                 return &object.Integer{Value: int64(len(value.Elements))}
             default:
-                return makeError("cannot call len on %s", value.Type())
+                return makeBuiltinError("cannot call len on %s", value.Type())
             }
         },
     },
     "first": &object.Builtin{
         Function: func(args ...object.Object) object.Object {
             if len(args) != 1 {
-                return makeError("wrong number of arguments, want, got %d", len(args))
+                return makeBuiltinError("wrong number of arguments, want, got %d", len(args))
             }
 
             arg := args[0]
             switch value := arg.(type) {
             case *object.Array:
                 if len(value.Elements) == 0 {
-                    return makeError("cannot get first argument of an empty array")
+                    return makeBuiltinError("cannot get first argument of an empty array")
                 }
                 return value.Elements[0]
             default:
-                return makeError("cannot call first on %s", value.Type())
+                return makeBuiltinError("cannot call first on %s", value.Type())
             }
         },
     },
     "last": &object.Builtin{
         Function: func(args ...object.Object) object.Object {
             if len(args) != 1 {
-                return makeError("wrong number of arguments, want, got %d", len(args))
+                return makeBuiltinError("wrong number of arguments, want, got %d", len(args))
             }
 
             arg := args[0]
             switch value := arg.(type) {
             case *object.Array:
                 if len(value.Elements) == 0 {
-                    return makeError("cannot get last argument of an empty array")
+                    return makeBuiltinError("cannot get last argument of an empty array")
                 }
                 return value.Elements[len(value.Elements)-1]
             default:
-                return makeError("cannot call last on %s", value.Type())
+                return makeBuiltinError("cannot call last on %s", value.Type())
             }
         },
     },
     "rest": &object.Builtin{
         Function: func(args ...object.Object) object.Object {
             if len(args) != 1 {
-                return makeError("wrong number of arguments, want, got %d", len(args))
+                return makeBuiltinError("wrong number of arguments, want, got %d", len(args))
             }
 
             arg := args[0]
@@ -75,20 +76,20 @@ var builtins = map[string]*object.Builtin{
             case *object.Array:
                 length := len(value.Elements)
                 if length == 0 {
-                    return makeError("cannot get rest of an empty array")
+                    return makeBuiltinError("cannot get rest of an empty array")
                 }
                 newElements := make([]object.Object, length-1, length-1)
                 copy(newElements, value.Elements[1:length])
                 return &object.Array{Elements: newElements}
             default:
-                return makeError("cannot call rest on %s", value.Type())
+                return makeBuiltinError("cannot call rest on %s", value.Type())
             }
         },
     },
     "push": &object.Builtin{
         Function: func(args ...object.Object) object.Object {
             if len(args) != 2 {
-                return makeError("wrong number of arguments, want 2, got %d", len(args))
+                return makeBuiltinError("wrong number of arguments, want 2, got %d", len(args))
             }
 
             arg := args[0]
@@ -101,7 +102,7 @@ var builtins = map[string]*object.Builtin{
                 newElements[length] = element
                 return &object.Array{Elements: newElements}
             default:
-                return makeError("cannot call push on %s", value.Type())
+                return makeBuiltinError("cannot call push on %s", value.Type())
             }
         },
     },
@@ -130,11 +131,11 @@ var builtins = map[string]*object.Builtin{
     "readline": &object.Builtin{
         Function: func(args ...object.Object) object.Object {
             if len(args) != 1 {
-                return makeError("wrong number of arguments, want 1, got %d", len(args))
+                return makeBuiltinError("wrong number of arguments, want 1, got %d", len(args))
             }
             output, ok := args[0].(*object.String)
             if !ok {
-                return makeError("expected argument to be of type string")
+                return makeBuiltinError("expected argument to be of type string")
             }
             fmt.Printf("%s", output.Value)
             scanner := bufio.NewScanner(os.Stdin)
@@ -147,7 +148,7 @@ var builtins = map[string]*object.Builtin{
     "str": &object.Builtin{
         Function: func(args ...object.Object) object.Object {
             if len(args) != 1 {
-                return makeError("wrong number of arguments, want 1, got %d", len(args))
+                return makeBuiltinError("wrong number of arguments, want 1, got %d", len(args))
             }
 
             arg := args[0]
@@ -157,7 +158,7 @@ var builtins = map[string]*object.Builtin{
     "int": &object.Builtin{
         Function: func(args ...object.Object) object.Object {
             if len(args) != 1 {
-                return makeError("wrong number of arguments, want 1, got %d", len(args))
+                return makeBuiltinError("wrong number of arguments, want 1, got %d", len(args))
             }
 
             arg := args[0]
@@ -166,7 +167,7 @@ var builtins = map[string]*object.Builtin{
                 s := strings.TrimSpace(value.Value)
                 i, err := strconv.ParseInt(s, 10, 64)
                 if err != nil {
-                    return makeError("Cannot convert string \"%s\" to integer", value.Value)
+                    return makeBuiltinError("Cannot convert string \"%s\" to integer", value.Value)
                 }
                 return &object.Integer{Value: i}
             case *object.Float:
@@ -175,7 +176,7 @@ var builtins = map[string]*object.Builtin{
             case *object.Integer:
                 return value
             default:
-                return makeError("cannot convert values of type %s to int", arg.Type())
+                return makeBuiltinError("cannot convert values of type %s to int", arg.Type())
             }
             return &object.String{Value: arg.String()}
         },
@@ -183,7 +184,7 @@ var builtins = map[string]*object.Builtin{
     "float": &object.Builtin{
         Function: func(args ...object.Object) object.Object {
             if len(args) != 1 {
-                return makeError("wrong number of arguments, want 1, got %d", len(args))
+                return makeBuiltinError("wrong number of arguments, want 1, got %d", len(args))
             }
 
             arg := args[0]
@@ -192,7 +193,7 @@ var builtins = map[string]*object.Builtin{
                 s := strings.TrimSpace(value.Value)
                 f, err := strconv.ParseFloat(s, 64)
                 if err != nil {
-                    return makeError("Cannot convert string \"%s\" to float", value.Value)
+                    return makeBuiltinError("Cannot convert string \"%s\" to float", value.Value)
                 }
                 return &object.Float{Value: f}
             case *object.Float:
@@ -201,7 +202,7 @@ var builtins = map[string]*object.Builtin{
                 f := float64(value.Value)
                 return &object.Float{Value: f}
             default:
-                return makeError("cannot convert values of type %s to int", arg.Type())
+                return makeBuiltinError("cannot convert values of type %s to int", arg.Type())
             }
             return &object.String{Value: arg.String()}
         },
@@ -209,7 +210,7 @@ var builtins = map[string]*object.Builtin{
     "substring": &object.Builtin{
         Function: func(args ...object.Object) object.Object {
             if len(args) != 3 {
-                return makeError("wrong number of arguments, want 3, got %d", len(args))
+                return makeBuiltinError("wrong number of arguments, want 3, got %d", len(args))
             }
 
             arg := args[0]
@@ -219,33 +220,33 @@ var builtins = map[string]*object.Builtin{
                 end := args[2]
                 startI, ok := start.(*object.Integer)
                 if !ok {
-                    return makeError("Start index need to be an integer")
+                    return makeBuiltinError("Start index need to be an integer")
                 }
                 if startI.Value < 0 {
-                    return makeError("Start index must be >= 0")
+                    return makeBuiltinError("Start index must be >= 0")
                 }
                 endI, ok := end.(*object.Integer)
                 if !ok {
-                    return makeError("End index need to be an integer")
+                    return makeBuiltinError("End index need to be an integer")
                 }
                 strValue := value.Value
                 r := []rune(strValue)
                 if endI.Value > int64(len(r)) {
-                    return makeError("End index must be < than strings length")
+                    return makeBuiltinError("End index must be < than strings length")
                 }
                 if endI.Value < startI.Value {
-                    return makeError("End index must be >= start index")
+                    return makeBuiltinError("End index must be >= start index")
                 }
                 return &object.String{Value: string(r[startI.Value:endI.Value])}
             default:
-                return makeError("cannot call substring on %s", value.Type())
+                return makeBuiltinError("cannot call substring on %s", value.Type())
             }
         },
     },
     "copy": &object.Builtin{
         Function: func(args ...object.Object) object.Object {
             if len(args) != 1 {
-                return makeError("wrong number of arguments, want 1, got %d", len(args))
+                return makeBuiltinError("wrong number of arguments, want 1, got %d", len(args))
             }
 
             arg := args[0]
@@ -255,7 +256,7 @@ var builtins = map[string]*object.Builtin{
     "deepcopy": &object.Builtin{
         Function: func(args ...object.Object) object.Object {
             if len(args) != 1 {
-                return makeError("wrong number of arguments, want 1, got %d", len(args))
+                return makeBuiltinError("wrong number of arguments, want 1, got %d", len(args))
             }
 
             arg := args[0]
@@ -316,14 +317,14 @@ var builtins = map[string]*object.Builtin{
             for _, arg := range args {
                 argStrs = append(argStrs, arg.String())
             }
-            return makeError(strings.Join(argStrs, ", "))
+            return makeBuiltinError(strings.Join(argStrs, ", "))
         },
     },
 }
 
 func isOfTypeHelper(wantedType object.ObjectType, args ...object.Object) object.Object {
     if len(args) != 1 {
-        return makeError("wrong number of arguments, want 1, got %d", len(args))
+        return makeBuiltinError("wrong number of arguments, want 1, got %d", len(args))
     }
 
     arg := args[0]
@@ -368,4 +369,8 @@ func deepCopy(arg object.Object) object.Object {
         // no need to deepcopy
         return arg
     }
+}
+
+func makeBuiltinError(format string, a ...interface{}) *object.Error {
+    return &object.Error{Message: fmt.Sprintf(format, a...), StackTrace: []ast.PositionalInfo{}}
 }
