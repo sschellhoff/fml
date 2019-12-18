@@ -13,8 +13,10 @@ To run the interpreters REPL: `./interpreter`, to run a file, run `./interpreter
 [src/language/examples](https://github.com/sschellhoff/fml/tree/master/src/language/examples)
 
 
+## Core library
+Set environment variable `FMLPATH` to the absolute path of `src/language/corelibrary`.
+
 ## Coming soon
 * plugins (for own code wrappers and stuff)
 * more tests
 * lots of refactoring
-* extend and modularize library

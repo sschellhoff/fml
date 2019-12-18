@@ -1,0 +1,17 @@
+const create = fun() {
+    const this = {};
+    let data = [];
+    this.length = fun() {
+        return len(data);
+    }
+    this.set = fun(idx, value) {
+        data[idx] = valule;
+    }
+    this.get = fun(idx) {
+        return data[idx];
+    }
+    this.push = fun(value) {
+        data = push(data, value);
+    }
+    return this;
+}

@@ -32,7 +32,19 @@ func Eval(node ast.Node, env *object.Environment, modules map[string]*object.Mod
             MODULEPATH = cwd
         }
         if !filepath.IsAbs(path) {
-            path = filepath.Join(MODULEPATH, path)
+            fmlpath := os.Getenv("FMLPATH")
+            if fmlpath != "" {
+                core_path := filepath.Join(fmlpath, path)
+                info, err := os.Stat(core_path)
+                if err != nil || info.IsDir() {
+                    path = filepath.Join(MODULEPATH, path)
+                } else {
+                    path = core_path
+                }
+            } else {
+                path = filepath.Join(MODULEPATH, path)
+            }
+
         }
         name := node.Name
         // don't load module if already loaded
