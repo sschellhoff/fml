@@ -445,7 +445,7 @@ func applyFunction(fn object.Object, args []object.Object, modules map[string]*o
     function, ok := fn.(*object.Function)
     if ok {
         if len(args) != len(function.Parameters) {
-            return makeError(posInfo, "Wrong number of arguiments in function call! Wanted %d, got %d", len(function.Parameters), len(args))
+            return makeErrorWithEmptyStacktrace("Wrong number of arguiments in function call! Wanted %d, got %d", len(function.Parameters), len(args))
         }
         extendedEnv := extendFunctionEnv(function, args)
         evaluated := Eval(function.Body, extendedEnv, modules)
