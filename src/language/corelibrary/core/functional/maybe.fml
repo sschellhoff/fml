@@ -1,0 +1,67 @@
+const Just = fun(a) {
+    const this = {}
+    const value = a
+    this.isJust = fun() {
+        return true
+    }
+    this.isNothing = fun() {
+        return false
+    }
+    this.getValue = fun() {
+        return value
+    }
+    this.toString = fun() {
+        return "Just(" + str(value) + ")"
+    }
+    return this
+}
+
+const Nothing = fun() {
+    const this = {}
+    this.isJust = fun() {
+        return false
+    }
+    this.isNothing = fun() {
+        return true
+    }
+    this.getValue = fun() {
+        error("cannot get value of Nothing")
+    }
+    this.toString = fun() {
+        return "Nothing"
+    }
+    return this
+}
+
+// ( a -> b ) -> ma -> mb
+const fmap = fun(f_a_b) {
+    return fun(ma) {
+        if ma.isNothing() {
+            return Nothing()
+        } else {
+            return Just(f_a_b(ma.getValue()))
+        }
+    }
+}
+
+// m( a -> b ) -> ma -> mb
+const appL = fun(mf_a_b) {
+    return fun(ma) {
+        if mf_a_b.isNothing() {
+            return Nothing()
+        } else {
+            return fmap(mf_a_b.getValue())(ma)
+        }
+    }
+}
+
+// ma -> (a -> mb) -> mb
+const bind = fun(ma) {
+    return fun(f_a_mb) {
+        if ma.isNothing() {
+            return Nothing()
+        } else {
+            return f_a_mb(ma.getValue())
+        }
+    }
+}

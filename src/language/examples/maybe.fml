@@ -1,0 +1,25 @@
+import "core/functional/maybe.fml" as maybe
+
+let j1 = maybe.Just(1)
+let j0 = maybe.Just(0)
+let j50 = maybe.Just(50)
+let succ = fun(a) {
+    return a + 1
+}
+let jsucc = maybe.Just(succ)
+let strange = fun(a) {
+    if a == 0 {
+        return maybe.Nothing()
+    } else {
+        return maybe.Just(100 / a)
+    }
+}
+
+println(maybe.fmap(succ)(j1).toString())
+println(maybe.fmap(succ)(maybe.Nothing()).toString())
+println(maybe.appL(jsucc)(j1).toString())
+println(maybe.appL(jsucc)(maybe.Nothing()).toString())
+println(maybe.bind(maybe.Nothing())(strange).toString())
+println(maybe.bind(j1)(strange).toString())
+println(maybe.bind(j0)(strange).toString())
+println(maybe.bind(j50)(strange).toString())
