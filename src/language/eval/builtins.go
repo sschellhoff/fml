@@ -106,6 +106,25 @@ var builtins = map[string]*object.Builtin{
             }
         },
     },
+    "makeArray": &object.Builtin{
+        Function: func(args ...object.Object) object.Object {
+            if len(args) != 2 {
+                return makeBuiltinError("wrong number of arguments, want 2, got %d", len(args))
+            }
+
+            lengthObj, ok := args[0].(*object.Integer)
+            if !ok {
+                return makeBuiltinError("first argument must be of type integer, got %s", args[0].Type())
+            }
+            length := lengthObj.Value
+            value := args[1]
+            elements := make([]object.Object, length)
+            for i := range elements {
+                elements[i] = value
+            }
+            return &object.Array{Elements: elements}
+        },
+    },
     "print": &object.Builtin{
         Function: func(args ...object.Object) object.Object {
             var strs = []string{}
