@@ -13,6 +13,9 @@ const Just = fun(a) {
     this.map = fun(f_a_b) {
         return fmap(f_a_b)(this)
     }
+    this.app = fun(mf_a_b) {
+        return appL(mf_a_b)(this)
+    }
     this.bind = bind(this)
     this.toString = fun() {
         return "Just(" + str(value) + ")"
@@ -33,6 +36,9 @@ const Nothing = fun() {
     }
     this.map = fun(f_a_b) {
         return fmap(f_a_b)(this)
+    }
+    this.app = fun(mf_a_b) {
+        return appL(mf_a_b)(this)
     }
     this.bind = bind(this)
     this.toString = fun() {
