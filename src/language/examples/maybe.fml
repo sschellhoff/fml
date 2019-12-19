@@ -7,7 +7,7 @@ let succ = fun(a) {
     return a + 1
 }
 let jsucc = maybe.Just(succ)
-let strange = fun(a) {
+let failable = fun(a) {
     if a == 0 {
         return maybe.Nothing()
     } else {
@@ -15,11 +15,30 @@ let strange = fun(a) {
     }
 }
 
+const fail = fun(a) {
+    return maybe.Nothing()
+}
+
+println("fmap:")
 println(maybe.fmap(succ)(j1).toString())
 println(maybe.fmap(succ)(maybe.Nothing()).toString())
+println("")
+println("appL:")
 println(maybe.appL(jsucc)(j1).toString())
 println(maybe.appL(jsucc)(maybe.Nothing()).toString())
-println(maybe.bind(maybe.Nothing())(strange).toString())
-println(maybe.bind(j1)(strange).toString())
-println(maybe.bind(j0)(strange).toString())
-println(maybe.bind(j50)(strange).toString())
+println("")
+println("bind:")
+println(maybe.bind(maybe.Nothing())(failable).toString())
+println(maybe.bind(j1)(failable).toString())
+println(maybe.bind(j0)(failable).toString())
+println(maybe.bind(j50)(failable).toString())
+println("")
+println(".map:")
+println(maybe.Just(1).map(succ).map(succ).toString())
+println(maybe.Nothing().map(succ).map(succ).toString())
+println("")
+println(".bind:")
+println(maybe.Nothing().bind(failable).toString())
+println(maybe.Just(0).bind(failable).toString())
+println(maybe.Just(10).bind(failable).bind(failable).toString())
+println(maybe.Just(10).bind(failable).bind(fail).bind(failable).toString())

@@ -10,6 +10,10 @@ const Just = fun(a) {
     this.getValue = fun() {
         return value
     }
+    this.map = fun(f_a_b) {
+        return fmap(f_a_b)(this)
+    }
+    this.bind = bind(this)
     this.toString = fun() {
         return "Just(" + str(value) + ")"
     }
@@ -27,6 +31,10 @@ const Nothing = fun() {
     this.getValue = fun() {
         error("cannot get value of Nothing")
     }
+    this.map = fun(f_a_b) {
+        return fmap(f_a_b)(this)
+    }
+    this.bind = bind(this)
     this.toString = fun() {
         return "Nothing"
     }
