@@ -1,0 +1,25 @@
+const createSieve = fun(size) {
+    const sieve = makeArray(size, true)
+    sieve[0] = false
+    sieve[1] = false
+    loop i in 2..size {
+        let j = i+i
+        loop j < size {
+            sieve[j] = false
+            j += i
+        }
+    }
+    return sieve
+}
+
+const sumPrimes = fun(sieve) {
+    let result = 0;
+    loop i, p in sieve {
+        if p {
+            result += i;
+        }
+    }
+    return result;
+}
+
+println(sumPrimes(createSieve(2000000)))
