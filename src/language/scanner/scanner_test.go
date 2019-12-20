@@ -34,6 +34,8 @@ func TestNextToken(t *testing.T) {
     13.37
     try catch
     += -= *= /= %=
+    "\thello\\\"world\"\n"
+    "\u263A"
     `
 
     tests := []struct {
@@ -103,6 +105,8 @@ func TestNextToken(t *testing.T) {
         {token.MULTASSIGN, ""},
         {token.DIVASSIGN, ""},
         {token.MODASSIGN, ""},
+        {token.STRING, "\thello\\\"world\"\n"},
+        {token.STRING, "\u263a"},
     }
 
     scanner := New(input)

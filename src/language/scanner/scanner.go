@@ -2,6 +2,8 @@ package scanner
 
 import (
     "fmt"
+    "bytes"
+    "strconv"
     "unicode"
     "errors"
     "language/token"
@@ -216,6 +218,11 @@ func (s *Scanner) isNum() bool {
     return unicode.IsDigit([]rune(s.peek())[0])
 }
 
+func (s *Scanner) isHex() bool {
+    r := []rune(s.peek())[0]
+    return s.isNum() || (r >= 'A' && r <= 'F') || (r >= 'a' && r <= 'f')
+}
+
 func (s *Scanner) isNum2() bool {
     return unicode.IsDigit([]rune(s.peek2())[0])
 }
@@ -284,14 +291,65 @@ func (s *Scanner) readIdentifier() {
 }
 
 func (s *Scanner) readString() (string, error) {
-    for !s.match("\"") {
+    var out bytes.Buffer
+    c := s.advance()
+    for c != "\"" {
+        if c == "\\" {
+            e := s.advance()
+            switch e {
+            case "\"":
+                out.WriteString("\"")
+            case "\\":
+                out.WriteString("\\")
+            case "n":
+                out.WriteString("\n")
+            case "t":
+                out.WriteString("\t")
+            case "u":
+                var hex bytes.Buffer
+                hex.WriteString("'\\u")
+                for i := 0; i < 4; i++ {
+                    if s.isHex() {
+                        hex.WriteString(s.advance())
+                    } else {
+                        return "", errors.New("Expected unicode sequence of length 4")
+                    }
+                }
+                hex.WriteString("'")
+                unquot, err := strconv.Unquote(hex.String())
+                if err != nil {
+                    return "", errors.New("cannot convert unicode sequence")
+                }
+                out.WriteString(unquot)
+            case "U":
+                var hex bytes.Buffer
+                hex.WriteString("'\\U")
+                for i := 0; i < 8; i++ {
+                    if s.isHex() {
+                        hex.WriteString(s.advance())
+                    } else {
+                        return "", errors.New("Expected unicode sequence of length 8")
+                    }
+                }
+                hex.WriteString("'")
+                unquot, err := strconv.Unquote(hex.String())
+                if err != nil {
+                    return "", errors.New("cannot convert unicode sequence")
+                }
+                out.WriteString(unquot)
+            default:
+                return "", errors.New("unexpected escape sequence")
+            }
+        } else {
+            out.WriteString(c)
+        }
         if s.isAtEnd() {
             return "", errors.New("unexpected end of file in string")
         }
-        s.advance()
+        c = s.advance()
     }
 
-    return string(s.sourcecode[s.start_idx+1: s.current_idx-1]), nil
+    return string(out.String()), nil
 }
 
 func (s *Scanner) readLineComment() error {
