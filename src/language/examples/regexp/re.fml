@@ -1,0 +1,65 @@
+import "lexer.fml" as lexer
+import "parser.fml" as parser
+import "token.fml" as token
+import "nfa.fml" as nfa
+import "dfa.fml" as dfa
+import "util.fml" as util
+
+const match = fun(regexp, word, alphabet) {
+    const _dfa = compile(regexp, alphabet);
+    let current_state = 0;
+    let length = 0;
+    loop i in 0..len(word) {
+        const c = word[i];
+        const next_state = _dfa.edge(current_state, c);
+        if next_state == null {
+            break;
+        }
+        current_state = next_state;
+        if util.is_in_list(_dfa.end_states, current_state) {
+            length = i + 1;
+        }
+    }
+    return length;
+}
+
+const compile = fun(regexp, alphabet) {
+    const scanner = lexer.create(regexp);
+    const parser = parser.create(scanner);
+    const ast = parser.parse();
+    const _nfa = nfa.build(ast);
+    const _dfa = dfa.compute(_nfa, alphabet);
+    return _dfa;
+}
+
+const get_alphabet = fun() {
+    return util.concat(util.concat(get_alpha_num(), get_special_keys()), get_whitespaces());
+}
+
+const get_alpha_num = fun() {
+    return util.concat(get_alpha(), get_numbers());
+}
+
+const get_alpha = fun() {
+    return util.concat(get_lower_chars(), get_upper_chars());
+}
+
+const get_lower_chars = fun() {
+    return ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"];
+}
+
+const get_upper_chars = fun() {
+    return ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"];
+}
+
+const get_numbers = fun() {
+    return ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"];
+}
+
+const get_special_keys = fun() {
+    return ["!", "\"", "§", "$", "%", "&", "/", "(", ")", "=", "?", "`", "@", ",", ";", ".", ":", "-", "_"];
+}
+
+const get_whitespaces = fun() {
+    return [" ", "\t", "\n"];
+}

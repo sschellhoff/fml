@@ -1,17 +1,17 @@
-import "lexer.fml" as lexer
-import "parser.fml" as parser
-import "token.fml" as token
-import "nfa.fml" as nfa
-import "dfa.fml" as dfa
+import "re.fml" as re
 
 const main = fun() {
-    let regexp = "(a|€).(a.(b|c*))";
-    const scanner = lexer.create(regexp);
-    const parser = parser.create(scanner);
-    const ast = parser.parse();
-    const _nfa = nfa.build(ast);
-    const _dfa = dfa.compute(_nfa, ["a", "b", "c"]);
-    _dfa.print(); 
+    const regexp = "(a|€).(a.(b|c*))";
+    const word = "aacb";
+
+    const length = re.match(regexp, word, re.get_alphabet());
+
+    if length == 0 {
+        println("no match");
+    } else {
+        print("match of length: ");
+        println(length);
+    }
 }
 
 main();

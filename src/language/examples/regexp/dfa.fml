@@ -3,6 +3,7 @@ import "util.fml" as util
 
 const compute = fun(_nfa, symbols) {
     const result = nfa.createAutomaton();
+    result.end_states = [];
 
     const S0 = nfa.epsClosureSimple(0, _nfa);
     let W = [S0];
@@ -24,10 +25,16 @@ const compute = fun(_nfa, symbols) {
             if setToStates[Q_key] == null {
                 setToStates[Q_key] = result.addState();
                 W = push(W, Q);
+                if Q.contains(1) {
+                    result.end_states = push(result.end_states, setToStates[Q_key]);
+                }
             }
             let P_key = util.setToHash(P);
             if setToStates[P_key] == null {
                 setToStates[P_key] = result.addState();
+                if P.contains(1) {
+                    result.end_states = push(result.end_states, setToStates[P_key]);
+                }
             }
             result.addEdge(setToStates[P_key], sym, setToStates[Q_key]);
         }

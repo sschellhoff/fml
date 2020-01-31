@@ -48,3 +48,20 @@ const setToHash = fun(s) {
     sort(elements);
     return str(elements);
 }
+
+const is_in_list = fun(list, elem) {
+    loop e in list {
+        if e == elem {
+            return true;
+        }
+    }
+    return false;
+}
+
+const concat = fun(list_a, list_b) {
+    let result = list_a;
+    loop elem in list_b {
+        result = push(result, elem);
+    }
+    return result;
+}
